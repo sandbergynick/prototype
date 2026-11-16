@@ -593,6 +593,51 @@ html, body, button, .tile, .base, .card, label { touch-action: manipulation; }
   .side.op.expanded .base .art { width: 48px; height: 80px; }
 }
 
+
+/* setup flow */
+.setup { gap: 12px; }
+.setuphead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+.setupbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.setupbtns button { display: inline-flex; align-items: center; gap: 6px; }
+.tutbtn.sm { padding: 8px 12px; } .tutbtn.sm .star { width: 18px; height: 18px; } .tutbtn.sm b { font-size: 14px; }
+.edbtn { color: #fff; border-color: #0a4fe0; background: linear-gradient(180deg, #5ee0ff 0%, #2aa8ff 48%, #0a6dff 52%, #1a8cff 100%); box-shadow: 0 3px 0 #0a3fb8; }
+.edbtn .gi { width: 16px; height: 16px; }
+.stepper { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.stepper li { display: inline-flex; align-items: center; gap: 6px; font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--ink-faint); padding: 3px 10px 3px 3px; border-radius: 999px; background: #eef6ff; }
+.stepper li i { font-style: normal; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #cfe2f7; color: #fff; font-size: 12px; }
+.stepper li.now { color: #0a3d91; background: #dff4ff; box-shadow: inset 0 0 0 2px var(--cyan); } .stepper li.now i { background: #0a6dff; }
+.stepper li.done i { background: #2fd06c; }
+.setup h2 { margin: 0; font-size: 22px; }
+.steprow { display: flex; align-items: center; gap: 10px; }
+.backbtn { padding: 6px 12px; }
+.setup .you { margin: -4px 0 0; color: var(--ink-soft); }
+.deckgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.decktile { position: relative; display: grid; gap: 6px; align-content: start; text-align: left; padding: 10px; border-radius: 10px; border: 3px solid var(--cyan); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px var(--ice), 0 3px 0 #9fdcff; }
+.decktile .dt-top { display: flex; align-items: center; gap: 6px; }
+.decktile strong { font-family: var(--display); font-size: 18px; letter-spacing: .05em; color: #0a3d91; flex: 1; }
+.decktile .dt-gems { display: flex; gap: 3px; }
+.decktile .gem { position: static; width: 20px; height: 20px; border-width: 2px; } .decktile .gem .ti { width: 10px; height: 10px; }
+.dt-pod { display: flex; justify-content: center; gap: 2px; padding: 4px 4px 0; border-radius: 6px;
+  background: repeating-linear-gradient(90deg, rgba(56,200,255,.45) 0 1px, transparent 1px 12px), repeating-linear-gradient(0deg, rgba(56,200,255,.45) 0 1px, transparent 1px 12px), radial-gradient(ellipse at 50% 55%, #fff 0%, #effcff 40%, #a8e8ff 80%, #4fb0ff 100%); }
+.dt-pod img { width: 48px; height: 80px; image-rendering: pixelated; }
+.dt-blurb { font-weight: 600; font-size: 13px; line-height: 1.35; color: var(--ink-soft); }
+.dt-plus { display: grid; place-items: center; height: 84px; font-family: var(--display); font-size: 48px; color: var(--cyan); border-radius: 6px; border: 2px dashed #9fdcff; }
+.decktile.build { border-style: dashed; }
+@media (max-width: 820px) {
+  .setup { padding: 12px; gap: 9px; }
+  .setup .logo.big { font-size: 34px; }
+  .setuphead { gap: 8px; } .setupbtns { width: 100%; } .setupbtns button { flex: 1; justify-content: center; padding: 8px 6px; font-size: 13px; }
+  .setup h2 { font-size: 18px; }
+  .stepper li { font-size: 11px; padding-right: 7px; } .stepper li i { width: 17px; height: 17px; font-size: 10px; }
+  .deckgrid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .decktile { padding: 7px; gap: 4px; }
+  .decktile strong { font-size: 14px; }
+  .dt-pod img { width: 36px; height: 60px; }
+  .dt-blurb { display: none; }
+  .dt-plus { height: 64px; font-size: 36px; }
+  .frontpick { grid-template-columns: 1fr 1fr 1fr; gap: 6px; } .frontpick button { padding: 8px 4px; } .frontpick img { width: 48px; height: 80px; } .frontpick small { font-size: 11px; }
+}
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 
@@ -1270,34 +1315,44 @@ function installCustom() {
 }
 let setupSel = { me: "IGNITION", ai: "TIDEWALL" };
 
-function showSetup(keep) {
+let setupStep = 1;
+function stepper(n) {
+  const names = ["Your deck", "Opponent", "Front robot"];
+  return `<ol class="stepper" aria-label="Setup steps">${names.map((t, k) => `<li class="${k + 1 === n ? "now" : k + 1 < n ? "done" : ""}" ${k + 1 === n ? 'aria-current="step"' : ""}><i>${k + 1}</i>${t}</li>`).join("")}</ol>`;
+}
+function deckTile(n, side) {
+  const dk = DECKS[n], types = [...new Set(dk.bases.map((b) => BASES[b].type))];
+  return `<button class="decktile" data-set="${side}:${n}">
+    <div class="dt-top"><strong>${n === "CUSTOM" ? "YOUR DECK" : n}</strong><span class="dt-gems">${types.map((t) => `<span class="gem ${TYPES[t].cls}">${ICON[t]}</span>`).join("")}</span></div>
+    <div class="dt-pod">${dk.bases.map((b) => `<img src="${ART[b]}" alt="${b}">`).join("")}</div>
+    <span class="dt-blurb">${dk.blurb}</span></button>`;
+}
+function showSetup(step) {
   if (TUT) tutEnd();
-  const pOv = keep && document.querySelector('#overlay .overlay'), pMo = pOv && pOv.querySelector('.modal'), st = pOv ? [pOv.scrollTop, pMo.scrollTop] : null, rulesOpen = !!(pOv && pOv.querySelector('details.rules[open]'));
+  if (typeof step === "number") setupStep = step; else if (step !== true) setupStep = 1;
   installCustom();
-  const opt = (n, side) => {
-    const dk = DECKS[n];
-    return `<button class="deckpick ${setupSel[side] === n ? "on" : ""}" data-set="${side}:${n}"><strong>${n === "CUSTOM" ? "YOUR DECK" : n}</strong><div class="arts">${dk.bases.map((b) => `<img src="${ART[b]}" alt="${b}">`).join("")}</div><span>${dk.blurb}</span></button>`;
-  };
-  const mine = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE"].concat(DECKS.CUSTOM ? ["CUSTOM"] : []);
   if (!DECKS[setupSel.me]) setupSel.me = "IGNITION";
-  const custBtn = DECKS.CUSTOM ? "" : `<button class="deckpick" data-cmd="editor"><strong>BUILD YOUR OWN</strong><span>Pick any 3 robots and 30 cards.</span></button>`;
-  $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel">
-    <div class="titlelock"><div class="logo big">PROTOTYPE</div><span class="lbl">robot card duel</span></div>
-    <p>Build your three robots from your hand, burn cards for energy, and power down all three enemy BASEs to win.</p>
-    <button class="tutbtn" data-cmd="tutorial"><i class="star"></i><div><b>New here? Play the tutorial</b><span>A guided first game: about 3 minutes.</span></div></button>
-    <h3 class="lbl" style="font-size:12px">Your deck</h3>
-    <div class="optrow">${mine.map((n) => opt(n, "me")).join("")}${custBtn}</div>
-    <h3 class="lbl" style="font-size:12px">AI's deck</h3>
-    <div class="optrow">${["IGNITION", "TIDEWALL", "FORGE", "CYCLE"].map((n) => opt(n, "ai")).join("")}<button class="deckpick ${setupSel.ai === "RANDOM" ? "on" : ""}" data-set="ai:RANDOM"><strong>RANDOM</strong><span>Any of the four starter decks.</span></button></div>
-    <div class="btnrow"><button class="primary" data-cmd="tofront">Next: choose your front robot</button><button data-cmd="editor">${DECKS.CUSTOM ? "Edit your deck" : "Open deck editor"}</button></div>
-    <details class="rules" ${rulesOpen ? "open" : ""}><summary><b>Quick rules</b></summary>${rulesHTML()}</details>
-  </div></div>`;
-  if (st) { const o = document.querySelector('#overlay .overlay'); o.scrollTop = st[0]; o.querySelector('.modal').scrollTop = st[1]; }
+  if (setupStep === 3) return pickFront(setupSel.me);
+  const starters = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE"];
+  const top = `<div class="setuphead"><div class="titlelock"><div class="logo big">PROTOTYPE</div><span class="lbl">robot card duel</span></div>
+      <div class="setupbtns"><button class="tutbtn sm" data-cmd="tutorial"><i class="star"></i><b>Tutorial</b></button><button class="edbtn" data-cmd="editor"><svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/><path d="M8 8h3M8 12h3"/></svg>${DECKS.CUSTOM ? "Edit your deck" : "Deck editor"}</button><button data-cmd="rules">Rules</button></div></div>`;
+  let body;
+  if (setupStep === 1) {
+    const mine = starters.concat(DECKS.CUSTOM ? ["CUSTOM"] : []);
+    body = `${stepper(1)}<h2>Choose your deck</h2>
+      <div class="deckgrid">${mine.map((n) => deckTile(n, "me")).join("")}${DECKS.CUSTOM ? "" : `<button class="decktile build" data-cmd="editor"><div class="dt-top"><strong>BUILD YOUR OWN</strong></div><span class="dt-plus">+</span><span class="dt-blurb">Pick any 3 robots and 30 cards.</span></button>`}</div>`;
+  } else {
+    body = `${stepper(2)}<div class="steprow"><button class="backbtn" data-cmd="setupback" aria-label="Back to choose your deck">‹ Back</button><h2>Choose your opponent</h2></div>
+      <p class="you">You're playing <b>${setupSel.me === "CUSTOM" ? "YOUR DECK" : setupSel.me}</b>.</p>
+      <div class="deckgrid">${starters.map((n) => deckTile(n, "ai")).join("")}<button class="decktile" data-set="ai:RANDOM"><div class="dt-top"><strong>RANDOM</strong></div><span class="dt-plus">?</span><span class="dt-blurb">Any of the four starter decks.</span></button></div>`;
+  }
+  $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel setup">${top}${body}</div></div>`;
 }
 function pickFront(deck) {
   const bs = DECKS[deck].bases;
-  $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel">
-    <h2>Who starts in front?</h2>
+  setupStep = 3;
+  $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel setup">
+    ${stepper(3)}<div class="steprow"><button class="backbtn" data-cmd="setupback" aria-label="Back to choose your opponent">‹ Back</button><h2>Who starts in front?</h2></div>
     <p>Your FRONT robot does the fighting; the other two sit in support. You can rotate for free once per turn.</p>
     <div class="frontpick">${bs.map((b, i) => `<button data-front="${i}"><img src="${ART[b]}" alt="${b}"><b>${b}</b><small>${hpBar(BASES[b].hp, BASES[b].hp, "sm")}${slotPips(BASES[b].slots, 0)}<br>${rich(BASES[b].text)}</small></button>`).join("")}</div>
   </div></div>`;
@@ -1414,7 +1469,8 @@ function onMove(mi) {
 function onCmd(cmd) {
   if (cmd === "editor") return openEditor();
   if (cmd === "tutorial") return startTutorial();
-  if (cmd === "tofront") return pickFront(setupSel.me);
+  if (cmd === "tofront") return showSetup(3);
+  if (cmd === "setupback") return showSetup(Math.max(1, setupStep - 1));
   if (cmd.startsWith("ed:")) return edCmd(cmd.slice(3));
   if (cmd === "new") return showSetup();
   if (cmd === "closepeek") { if (ui.peek) { ui = { ...ui, peek: null }; render(); } return; }
@@ -1422,7 +1478,12 @@ function onCmd(cmd) {
   if (cmd === "opview") { opFull = !opFull; return render(); }
   if (cmd === "ainext") return aiNext();
   if (cmd === "aiauto") { try { localStorage.setItem("prototype.aiAuto", aiAuto() ? "0" : "1"); } catch (e) {} if (aiAuto() && aiWait) return aiNext(); return render(); }
-  if (cmd === "rules" && !G) return;
+  if (cmd === "rules" && (!G || document.querySelector("#overlay .setup"))) {
+    const back = setupStep;
+    $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel"><h2>Quick rules</h2><div class="rules">${rulesHTML()}</div><button class="primary" id="closeR">Back</button></div></div>`;
+    $("#closeR").onclick = () => showSetup(back);
+    return;
+  }
   if (!G || busy || G.cur !== ME) return;
   if (TUT && tutStep() && tutStep().lock && (cmd === "end" || cmd === "rotate")) return tutNudge();
   const me = G.p[ME], c = ui.sel != null ? me.hand[ui.sel] : null;
@@ -1785,7 +1846,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-set],[data-cmd],[data-pick],[data-qburn],[data-hand],[data-move],[data-salv],[data-pay],.base");
   if (!t) return;
-  if (t.dataset.set) { const [side, n] = t.dataset.set.split(":"); setupSel[side] = n; return showSetup(true); }
+  if (t.dataset.set) { const [side, n] = t.dataset.set.split(":"); setupSel[side] = n; return showSetup(side === "me" ? 2 : 3); }
   if (t.dataset.cmd) return onCmd(t.dataset.cmd);
   if (t.dataset.move != null) return onMove(+t.dataset.move);
   if (t.dataset.salv) return act(["play", ui.sel, +t.dataset.salv]);
@@ -1827,8 +1888,8 @@ function edCmd(c) {
   else if (op === "start") { const s = DECKS[arg]; ed.bases = s.bases.slice(); ed.counts = Object.fromEntries(s.list.map(([n, k]) => [n, k])); }
   else if (op === "save") {
     saveCustom({ bases: ed.bases.slice(), list: Object.entries(ed.counts) });
-    setupSel.me = "CUSTOM"; return showSetup();
-  } else if (op === "cancel") return showSetup();
+    setupSel.me = "CUSTOM"; return showSetup(2);
+  } else if (op === "cancel") return showSetup(1);
   renderEditor();
 }
 function poolCardHTML(name) {
