@@ -517,6 +517,82 @@ html, body, button, .tile, .base, .card, label { touch-action: manipulation; }
 .autoai input { width: 16px; height: 16px; accent-color: #0a6dff; }
 @media (max-width: 820px) { .aidid { max-height: 64px; font-size: 12.5px; } }
 
+/* ===== round 3: graphics over numbers, compact enemy board on phones ===== */
+.gi { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -2px; flex: none; }
+.cnt { display: inline-flex; align-items: center; gap: 2px; font-weight: 800; }
+.sidehead .sub { gap: 8px; }
+/* HP bar with number inside */
+.hp { position: relative; height: 16px; border-radius: 4px; background: #dfe7f3; box-shadow: inset 0 0 0 1.5px rgba(0,40,120,.15); overflow: hidden; flex: 1; min-width: 0; }
+.hp i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: linear-gradient(180deg, #8af7ab 0%, #2fd06c 50%, #1fae57 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.6); transition: width .35s; }
+.hp.low i { background: linear-gradient(180deg, #ffb3a6 0%, #ff5a46 50%, #e2392a 100%); }
+.hp span { position: relative; display: block; text-align: center; font-family: var(--display); font-weight: 700; font-size: 12.5px; line-height: 16px; color: #fff;
+  text-shadow: 0 0 2px rgba(0,30,60,.9), 0 1px 1px rgba(0,30,60,.8); letter-spacing: .02em; }
+.hp span small { font-size: 9.5px; opacity: .85; }
+.hp.sm { height: 13px; display: inline-block; width: 72px; vertical-align: -2px; margin-right: 6px; flex: none; }
+.hp.sm span { font-size: 10.5px; line-height: 13px; }
+.sheet > .hp { height: 18px; } .sheet > .hp span { line-height: 18px; font-size: 13.5px; }
+.binfo .stat { display: flex; align-items: center; gap: 6px; }
+.frontpick small .hp.sm, .bpick small .hp.sm { display: block; width: 100%; margin: 4px 0; }
+/* burns pips */
+.burns { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; }
+.prow2 { display: inline-flex; gap: 3px; align-items: center; }
+.prow2 i { width: 9px; height: 12px; border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%; border: 1.5px solid #ff8a3d; background: #fff; }
+.prow2 i.on { background: radial-gradient(circle at 50% 70%, #fff3a0 0 20%, #ffb000 45%, #ff5a2a 100%); border-color: #ff6a2a; }
+.prow2 b { font-size: 11px; }
+.burns.out .prow2 i { border-color: #c9d2de; }
+/* move badges */
+.mvbtn small { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.mvbtn .rng { width: 13px; height: 13px; }
+.dmgb { display: inline-grid; place-items: center; min-width: 22px; height: 20px; padding: 0 4px; margin-left: 2px; color: #fff; font-family: var(--display); font-weight: 700; font-size: 13px;
+  background: radial-gradient(circle at 40% 35%, #ffb199, #ff4d2e 60%, #d42a12); clip-path: polygon(50% 0, 62% 18%, 84% 8%, 82% 32%, 100% 42%, 84% 58%, 94% 82%, 70% 80%, 58% 100%, 44% 82%, 22% 94%, 22% 70%, 0 58%, 16% 42%, 6% 18%, 30% 22%); }
+.fxs { font-weight: 700; color: var(--ink-soft); }
+.viewbtn { display: none; }
+/* phones */
+@media (max-width: 820px) {
+  .app.game { grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; }
+  .viewbtn { display: inline-block; margin-left: auto; padding: 3px 9px; font-size: 11.5px; box-shadow: 0 2px 0 #9fdcff; }
+  .side.op .sidehead { width: 100%; }
+  .handbar { padding-left: 10px; padding-right: 10px; scroll-padding-left: 10px; }
+  .hp { height: 14px; } .hp span { font-size: 11px; line-height: 14px; }
+  .base .bmain { gap: 3px; }
+  .slotrow { gap: 3px; }
+  /* compact enemy board (tap "View board" or a robot for detail) */
+  .side.op:not(.expanded) { grid-template-rows: auto auto; }
+  .side.op:not(.expanded) .formation { padding-top: 6px; gap: 5px; }
+  .side.op:not(.expanded) .base { grid-template-columns: 30px minmax(0, 1fr); align-items: center; padding: 5px 5px 5px 4px; gap: 4px; height: auto; text-align: left; }
+  .side.op:not(.expanded) .pod { position: static; width: 30px; padding: 0; background: none; box-shadow: none; overflow: visible; border-radius: 0; }
+  .side.op:not(.expanded) .pod .art { width: 30px; height: 50px; }
+  .side.op:not(.expanded) .pod .ped { display: none; }
+  .side.op:not(.expanded) .pod .plate { left: 38px; right: 5px; top: 6px; bottom: auto; height: 16px; }
+  .side.op:not(.expanded) .plate .pd { display: none; }
+  .side.op:not(.expanded) .plate .pc { font-size: 10.5px; padding: 0 4px; margin: 0; justify-content: flex-start; }
+  .side.op:not(.expanded) .bmain { padding-top: 18px; justify-items: stretch; }
+  .side.op:not(.expanded) .gem { width: 16px; height: 16px; top: -6px; left: -6px; border-width: 2px; } .side.op:not(.expanded) .gem .ti { width: 8px; height: 8px; }
+  .side.op:not(.expanded) .postag { font-size: 7.5px; padding: 0 5px; }
+  .side.op:not(.expanded) .slotrow .spips i { width: 7px; height: 7px; }
+  .side.op:not(.expanded) .pchip { width: 15px; height: 15px; } .side.op:not(.expanded) .pchip img { width: 14px; height: 14px; }
+  .side.op:not(.expanded) .status { display: none; }
+  .side.op:not(.expanded) .hp { height: 12px; } .side.op:not(.expanded) .hp span { font-size: 9.5px; line-height: 12px; }
+  .side.op:not(.expanded) .hp span small { display: none; }
+  .side.op.expanded .formation { padding-top: 9px; }
+}
+
+
+@media (max-width: 820px) {
+  .base .bmain > .hp, .base .bmain .hp { width: 100%; align-self: stretch; justify-self: stretch; }
+  .side.op:not(.expanded) .postag { display: none; }
+  .side.op:not(.expanded) .base.front { box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #fff, 0 0 0 4px var(--cyan); }
+  .side.me .base { align-content: center; }
+}
+@media (max-width: 820px) and (max-height: 760px) {
+  .tile { height: 108px; }
+  .tname { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 10.5px; }
+}
+@media (max-width: 820px) and (min-height: 780px) {
+  .side.me .base .art { width: 72px; height: 120px; }
+  .side.op.expanded .base .art { width: 48px; height: 80px; }
+}
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 
@@ -668,26 +744,22 @@ const DECKS = {
   IGNITION: {
     blurb: "Plasma / Spark aggro. HALO fuels you from the back, ZIPP snipes, HAMZA finishes.",
     bases: ["ZIPP", "HALO", "HAMZA"],
-    list: [["Plasma Ribbon", 2], ["Flare Lance", 1], ["Ion Fist", 2], ["Arc Lash", 2], ["Turbo Fins", 1], ["Ember Core", 1], ["Spark Plug", 1], ["Igniter", 1],
-      ["Overclock", 2], ["Spare Parts", 1], ["Hot Start", 1], ["Afterburn", 1], ["Hardlight", 1], ["Salvage", 1], ["Power Cell", 2]],
+    list: [["Plasma Ribbon", 3], ["Flare Lance", 1], ["Ion Fist", 3], ["Arc Lash", 3], ["Turbo Fins", 1], ["Ember Core", 1], ["Spark Plug", 2], ["Igniter", 2], ["Overclock", 2], ["Spare Parts", 1], ["Hot Start", 1], ["Afterburn", 1], ["Hardlight", 1], ["Salvage", 1], ["Power Cell", 3], ["Fuel Rod", 2], ["Ember Whip", 1], ["Volt Lasso", 1]],
   },
   TIDEWALL: {
     blurb: "Steel / Liquid control. DOZER soaks hits, LITH mends, RHODE Cools attackers and pops their parts.",
     bases: ["DOZER", "LITH", "RHODE"],
-    list: [["Tide Ring", 2], ["Bubble Burst", 2], ["Undertow", 2], ["Piston Fist", 2], ["Chrome Halo", 2], ["Anchor Clamp", 1], ["Coolant Tank", 1],
-      ["Repair Kit", 1], ["Fortify", 1], ["Riptide", 1], ["Scan", 2], ["Dredge", 1], ["Ballast", 2]],
+    list: [["Tide Ring", 3], ["Bubble Burst", 3], ["Undertow", 2], ["Piston Fist", 3], ["Chrome Halo", 2], ["Anchor Clamp", 1], ["Coolant Tank", 1], ["Repair Kit", 2], ["Fortify", 2], ["Riptide", 1], ["Scan", 2], ["Dredge", 1], ["Ballast", 2], ["Tide Pool", 2], ["Slag Hammer", 1], ["Tidal Palm", 1], ["Foam Plating", 1]],
   },
   FORGE: {
     blurb: "Plasma / Steel ramp. Dynamos and Stoke build energy, then Nova Core cashes it all in at once.",
     bases: ["GAMMA", "DONDON", "NOMAD"],
-    list: [["Nova Core", 2], ["Slag Hammer", 2], ["Ember Whip", 2], ["Amplifier", 2], ["Dynamo", 2], ["Utility Arm", 1],
-      ["Stoke", 2], ["Temper", 1], ["Blueprint", 1], ["Factory Reset", 1], ["Encore", 1], ["Recycle", 1], ["Fuel Rod", 2]],
+    list: [["Nova Core", 3], ["Slag Hammer", 3], ["Ember Whip", 3], ["Amplifier", 2], ["Dynamo", 2], ["Utility Arm", 1], ["Stoke", 2], ["Temper", 1], ["Blueprint", 1], ["Factory Reset", 1], ["Encore", 1], ["Recycle", 1], ["Fuel Rod", 3], ["Plasma Ribbon", 2], ["Piston Fist", 2], ["Chrome Halo", 1], ["Repair Kit", 1]],
   },
   CYCLE: {
     blurb: "Spark / Liquid draw engine. Extra draws let FLUX zap the enemy front (up to twice a turn).",
     bases: ["JUNGO", "SCRIPT", "FLUX"],
-    list: [["Volt Lasso", 2], ["Tidal Palm", 2], ["Data Siphon", 2], ["Foam Plating", 2], ["Dynamo", 1], ["Utility Arm", 1],
-      ["Refresh", 2], ["Flash Flood", 1], ["Static Field", 1], ["Encore", 1], ["Blueprint", 1], ["Recycle", 1], ["Factory Reset", 1], ["Capacitor", 1], ["Tide Pool", 1]],
+    list: [["Volt Lasso", 3], ["Tidal Palm", 3], ["Data Siphon", 3], ["Foam Plating", 2], ["Dynamo", 1], ["Utility Arm", 1], ["Refresh", 2], ["Flash Flood", 1], ["Static Field", 1], ["Encore", 1], ["Blueprint", 1], ["Recycle", 1], ["Factory Reset", 1], ["Capacitor", 2], ["Tide Pool", 2], ["Ion Fist", 2], ["Tide Ring", 1], ["Arc Lash", 1], ["Power Cell", 1]],
   },
 };
 
@@ -761,7 +833,13 @@ const Poss = (p) => (p.human ? "Your" : p.name + "'s");
 const poss = (p) => (p.human ? "your" : p.name + "'s");
 // ------------------------------------------------------------------ rules
 function draw(g, p, init = false, normal = false) {
-  if (!p.deck.length) { if (!init && !g.sim) g.log(`${p.name} ${p.human ? "have" : "has"} no cards left to draw.`, "warn"); return; }
+  if (!p.deck.length) {
+    if (init || g.winner !== null) return;
+    const pi = g.p.indexOf(p);
+    g.winner = 1 - pi;
+    if (!g.sim) g.log(`${p.name} ${p.human ? "have" : "has"} no cards left to draw and ${p.human ? "lose" : "loses"}!`, "warn");
+    return;
+  }
   p.hand.push(p.deck.pop());
   if (!init && !normal && g.winner === null) {
     const pi = g.p.indexOf(p), o = g.p[1 - pi];
@@ -1068,6 +1146,18 @@ for (const M of [ART, CARDART]) for (const k in M) { const im = new Image(); im.
 let G = null, ui = { sel: null, mode: null, move: null }, busy = false, fxq = [], hits = new Set(), logs = [];
 const $ = (s) => document.querySelector(s);
 const ROT_ICON = `<svg class="roticon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10a7.5 7.5 0 0 1 13.2-3.6" /><path d="M19.5 14a7.5 7.5 0 0 1-13.2 3.6" /><path d="M18.6 2.8v4.1h-4.1" /><path d="M5.4 21.2v-4.1h4.1" /></svg>`;
+const DECK_ICON = `<svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="12" height="16" rx="2"/><path d="M5 6v13a2 2 0 0 0 2 2h9"/></svg>`;
+const SCRAP_ICON = `<svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>`;
+const RANGE_ICON = { CLOSE: `<svg class="gi rng" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h9M10 7l5 5-5 5M17 6v12"/></svg>`, FAR: `<svg class="gi rng" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>` };
+function hpBar(hp, max, cls = "") {
+  const pct = Math.max(0, (hp / max) * 100);
+  return `<div class="hp ${pct <= 34 ? "low" : ""} ${cls}" role="img" aria-label="${hp} of ${max} HP"><i style="width:${pct}%"></i><span>${hp}<small>/${max}</small></span></div>`;
+}
+function pipRow(on, total, cls, cap = 8, title = "") {
+  const n = Math.min(total, cap);
+  return `<span class="prow2 ${cls}" title="${title}">${Array.from({ length: n }, (_, k) => `<i class="${k < Math.min(on, cap) ? "on" : ""}"></i>`).join("")}${total > cap ? `<b>+${total - cap}</b>` : ""}</span>`;
+}
+let opFull = false;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ME = 0, AI = 1;
 
@@ -1108,7 +1198,7 @@ function baseInfoHTML(b, big = true) {
   const B0 = BASES[b], m = B0.stock, ab = splitAbility(B0.text);
   return `<div class="binfo"><div class="spin ${big ? "big" : ""}" data-spin="${b}" style="background-image:url(${SPIN[b]})"></div><div>
     <h4>${b}</h4>${typeBadge(B0.type)}
-    <div class="stat">${B0.hp} HP <span class="lbl">Slots</span> ${slotPips(B0.slots, 0)}</div>
+    <div class="stat">${hpBar(B0.hp, B0.hp, "sm")}<span class="lbl">Slots</span> ${slotPips(B0.slots, 0)}</div>
     <div class="ab"><span class="lbl">Stock move</span>${m ? `<b>${m.name}</b>${moveText(m)}${m.cost.length ? ` · ${costPips(m.cost)}` : " · free"}` : "<b>None</b>Needs a part to attack."}</div>
     <div class="ab"><span class="lbl">${ab.tag || "Ability"}</span><b>${ab.name}</b>${ab.desc}</div></div></div>`;
 }
@@ -1171,7 +1261,8 @@ function loadCustom() {
 }
 function saveCustom(d) { try { localStorage.setItem(STORE, JSON.stringify(d)); } catch (e) {} }
 function typesOf(bases) { const t = new Set(bases.map((b) => BASES[b].type)); t.add("NE"); return t; }
-function deckValid(d) { if (!d || d.bases.length !== 3 || d.list.reduce((s, [, n]) => s + n, 0) !== 20) return false; const t = typesOf(d.bases); return d.list.every(([n]) => CARDS[n] && t.has(CARDS[n].type)); }
+const DECK_SIZE = 30, MAX_COPIES = 3;
+function deckValid(d) { if (!d || d.bases.length !== 3 || d.list.reduce((s, [, n]) => s + n, 0) !== DECK_SIZE || d.list.some(([, n]) => n > MAX_COPIES)) return false; const t = typesOf(d.bases); return d.list.every(([n]) => CARDS[n] && t.has(CARDS[n].type)); }
 function installCustom() {
   const d = loadCustom();
   if (deckValid(d)) DECKS.CUSTOM = { blurb: "Your own build.", bases: d.bases.slice(), list: d.list.map((x) => x.slice()) };
@@ -1189,7 +1280,7 @@ function showSetup(keep) {
   };
   const mine = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE"].concat(DECKS.CUSTOM ? ["CUSTOM"] : []);
   if (!DECKS[setupSel.me]) setupSel.me = "IGNITION";
-  const custBtn = DECKS.CUSTOM ? "" : `<button class="deckpick" data-cmd="editor"><strong>BUILD YOUR OWN</strong><span>Pick any 3 robots and any 20 cards.</span></button>`;
+  const custBtn = DECKS.CUSTOM ? "" : `<button class="deckpick" data-cmd="editor"><strong>BUILD YOUR OWN</strong><span>Pick any 3 robots and 30 cards.</span></button>`;
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel">
     <div class="titlelock"><div class="logo big">PROTOTYPE</div><span class="lbl">robot card duel</span></div>
     <p>Build your three robots from your hand, burn cards for energy, and power down all three enemy BASEs to win.</p>
@@ -1208,7 +1299,7 @@ function pickFront(deck) {
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel">
     <h2>Who starts in front?</h2>
     <p>Your FRONT robot does the fighting; the other two sit in support. You can rotate for free once per turn.</p>
-    <div class="frontpick">${bs.map((b, i) => `<button data-front="${i}"><img src="${ART[b]}" alt="${b}"><b>${b}</b><small>${BASES[b].hp} HP ${slotPips(BASES[b].slots, 0)}<br>${rich(BASES[b].text)}</small></button>`).join("")}</div>
+    <div class="frontpick">${bs.map((b, i) => `<button data-front="${i}"><img src="${ART[b]}" alt="${b}"><b>${b}</b><small>${hpBar(BASES[b].hp, BASES[b].hp, "sm")}${slotPips(BASES[b].slots, 0)}<br>${rich(BASES[b].text)}</small></button>`).join("")}</div>
   </div></div>`;
   document.querySelectorAll("[data-front]").forEach((b) => b.onclick = () => startGame(deck, +b.dataset.front, setupSel.ai));
 }
@@ -1223,7 +1314,7 @@ function rulesHTML() {
   <li><b>Attack</b> with your FRONT's move. CLOSE hits only the enemy FRONT; FAR hits any enemy BASE. Attacking ends your turn.</li>
   <li><b>SYNC:</b> a move part on a robot of the same type hits harder. The colored number on the card is its damage when matched.</li>
   <li><b>NEUTRAL</b> (colorless) cards fit any deck. Their energy only pays "any" costs, and their moves never SYNC.</li>
-  <li><b>Empty deck:</b> you just stop drawing.</li>
+  <li><b>Decking out:</b> if you have to draw a card and your deck is empty, you lose. Extra-draw cards speed this up, so watch your deck count.</li>
   <li><b>Win</b> by powering down all three enemy BASEs. The first player skips their turn-1 draw.</li></ul>`;
 }
 
@@ -1255,7 +1346,7 @@ function checkEnd() {
   if (G.winner === null) return false;
   const won = G.winner === ME;
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel" style="max-width:460px;text-align:center;justify-items:center">
-    <h2>${won ? "Victory!" : "Defeat"}</h2><p>${won ? "All three enemy BASEs are powered down." : "Your last BASE powered down."} The game took ${G.turn + 1} turns.</p>
+    <h2>${won ? "Victory!" : "Defeat"}</h2><p>${(() => { const loser = G.p[1 - G.winner], decked = !loser.deck.length && alive(loser).length > 0; return decked ? (won ? "The AI ran out of cards to draw." : "You ran out of cards to draw.") : won ? "All three enemy BASEs are powered down." : "Your last BASE powered down."; })()} The game took ${G.turn + 1} turns.</p>
     <button class="primary" id="again">Play again</button></div></div>`;
   $("#again").onclick = showSetup;
   return true;
@@ -1328,6 +1419,7 @@ function onCmd(cmd) {
   if (cmd === "new") return showSetup();
   if (cmd === "closepeek") { if (ui.peek) { ui = { ...ui, peek: null }; render(); } return; }
   if (cmd === "openlog") { if (G) { ui = { ...ui, sel: null, peek: { k: "log" } }; render(); } return; }
+  if (cmd === "opview") { opFull = !opFull; return render(); }
   if (cmd === "ainext") return aiNext();
   if (cmd === "aiauto") { try { localStorage.setItem("prototype.aiAuto", aiAuto() ? "0" : "1"); } catch (e) {} if (aiAuto() && aiWait) return aiNext(); return render(); }
   if (cmd === "rules" && !G) return;
@@ -1449,7 +1541,7 @@ function baseHTML(b, side, pos) {
     <span class="postag">${isFront ? "FRONT" : "SUPPORT"}</span>
     <div class="pod"><img class="art" src="${ART[b.d.name]}" alt=""><i class="ped"></i><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div></div>
     <div class="bmain">
-      <div class="hprow"><span class="hpnum">${b.hp}<small>/${b.d.hp}</small></span><div class="hp ${pct <= 34 ? "low" : ""}"><i style="width:${pct}%"></i></div></div>
+      ${hpBar(b.hp, b.d.hp)}
       <div class="slotrow">${slots}${b.parts.map(partChip).join("")}</div>
       <div class="abl ${active ? "" : "off"}"><span class="tag ${ab.tag}">${ab.tag}</span><b>${ab.name}</b><span class="abd"> · ${ab.desc}</span></div>
       ${st.length ? `<div class="status">${st.join("")}</div>` : ""}
@@ -1468,7 +1560,7 @@ function movesHTML() {
     const ok = attackTargets(G, ME, mi).length > 0;
     const fx = e.m.fx.filter((f) => f !== "x").map((f) => FX[f]).join(" · ");
     const tag = sb ? `<span class="synctag tb-${TYPES[b.d.type].cls}">SYNC +${sb}</span>` : "";
-    return `<button class="mvbtn" data-move="${mi}" ${ok ? "" : "disabled"}><span class="mvn">${e.m.name}${tag}</span><span class="cost">${isX ? '<span class="pip free">ALL</span>' : costPips(e.m.cost)}</span><small>${e.m.rng} · <b>${dmg}</b> dmg${fx ? " · " + fx : ""}</small></button>`;
+    return `<button class="mvbtn" data-move="${mi}" ${ok ? "" : "disabled"}><span class="mvn">${e.m.name}${tag}</span><span class="cost">${isX ? '<span class="pip free">ALL</span>' : costPips(e.m.cost)}</span><small>${RANGE_ICON[e.m.rng]}${e.m.rng}<span class="dmgb" title="${dmg} damage">${dmg}</span>${fx ? `<span class="fxs">${fx}</span>` : ""}</small></button>`;
   }).join("")}</div>`;
   else out = `<div class="note">No attack yet: install a part with a move, or rotate.</div>`;
   const fresh = b.parts.filter((x) => x.move && x.installedTurn === G.turn && !me.hotstart);
@@ -1497,7 +1589,7 @@ function controlsHTML() {
   const rc = rotCost(G, ME);
   const canRot = !me.rotUsed && canPay(me, rc) && [1, 2].some((j) => me.pos[j]);
   const cancel = ui.mode ? `<button data-cmd="cancel">Cancel</button>` : "";
-  return `<div class="energy"><span class="lbl">Energy</span><span class="poolpips">${pool}</span><span class="burns ${canBurn(me) ? "" : "out"}">${Math.max(0, me.turns - me.burns)} burn${me.turns - me.burns === 1 ? "" : "s"} left</span></div>
+  return `<div class="energy"><span class="lbl">Energy</span><span class="poolpips">${pool}</span><span class="burns ${canBurn(me) ? "" : "out"}" title="${Math.max(0, me.turns - me.burns)} of ${me.turns} burns left this turn"><span class="lbl">Burns</span>${pipRow(Math.max(0, me.turns - me.burns), me.turns, "burnpips", 8)}</span></div>
     <div class="hint">${hint}</div>
     ${movesHTML()}
     <div class="btnrow tight">${cancel}<button class="rotbtn" data-cmd="rotate" ${canRot && !ui.mode ? "" : "disabled"} title="Swap a support robot into the front (once per turn)">${ROT_ICON}Rotate <small>${rc.length ? "costs 2" : me.rotUsed ? "used" : "free"}</small></button><button data-cmd="end" ${ui.mode ? "disabled" : ""}>End turn</button></div>`;
@@ -1525,7 +1617,7 @@ function baseDetailHTML(side, pos) {
   const p = G.p[side === "me" ? ME : AI], b = p.pos[pos];
   if (!b) return "";
   const parts = b.parts.length ? b.parts.map((x) => `<div class="prow"><img src="${CARDART[x.name]}" alt=""><div><b>${x.name}</b> ${slotPips(x.slots, x.slots)}${x.move && x.installedTurn === G.turn ? ' <span class="lbl">new · ready next turn</span>' : ""}<br><small>${rich(cardText(x))}</small></div></div>`).join("") : `<div class="note">No parts installed.</div>`;
-  return `<div class="sheethead"><h3>${side === "me" ? "Your" : "Enemy"} ${pos === 0 ? "FRONT" : "support"} · ${b.hp}/${b.d.hp} HP</h3><button class="x" data-cmd="closepeek" aria-label="Close">✕</button></div>${baseInfoHTML(b.d.name)}<div class="lbl" style="margin-top:4px;display:flex;gap:6px;align-items:center">Parts ${slotPips(b.d.slots, usedSlots(b))}</div>${parts}`;
+  return `<div class="sheethead"><h3>${side === "me" ? "Your" : "Enemy"} ${pos === 0 ? "FRONT" : "support"}</h3><button class="x" data-cmd="closepeek" aria-label="Close">✕</button></div>${hpBar(b.hp, b.d.hp)}${baseInfoHTML(b.d.name)}<div class="lbl" style="margin-top:4px;display:flex;gap:6px;align-items:center">Parts ${slotPips(b.d.slots, usedSlots(b))}</div>${parts}`;
 }
 function sheetHTML() {
   if (!G) return "";
@@ -1571,7 +1663,7 @@ function buildShell() {
   </main>
   <aside class="dock"><div class="panel ctrl"></div><div class="sheetslot"></div><div class="panel log" id="log"></div></aside>`;
   const q = (sel) => app.querySelector(sel);
-  shell = { app, head: q(".gbar"), opHead: q(".side.op .sidehead"), opForm: q(".side.op .formation"), ticker: q(".ticker"),
+  shell = { app, opSide: q(".side.op"), head: q(".gbar"), opHead: q(".side.op .sidehead"), opForm: q(".side.op .formation"), ticker: q(".ticker"),
     meForm: q(".side.me .formation"), meHead: q(".side.me .sidehead"), hand: q(".handbar"), ctrl: q(".ctrl"), sheet: q(".sheetslot"), log: q("#log"), logN: -1 };
 }
 function render() {
@@ -1581,10 +1673,11 @@ function render() {
   const order = [1, 0, 2];
   setHTML(shell.head, `<div class="logo">PROTOTYPE</div><div class="turnpill ${G.cur === ME ? "me" : ""}">${G.winner !== null ? "Game over" : G.cur === ME ? "Your turn" : "AI's turn"} · T${G.turn + 1}</div>
     <div class="spacer"></div><button class="sm" data-cmd="rules">Rules</button><button class="sm" data-cmd="new">New</button>`);
-  setHTML(shell.opHead, `<h2>AI · ${op.deckName}</h2><span class="sub"><span class="opcards">${op.hand.map(() => "<i></i>").join("")}</span> Deck ${op.deck.length} · Scrap ${op.scrap.length}</span>`);
+  setHTML(shell.opHead, `<h2>AI · ${op.deckName}</h2><span class="sub"><span class="opcards" title="${op.hand.length} cards in hand">${op.hand.map(() => "<i></i>").join("")}</span><span class="cnt" title="Deck">${DECK_ICON}${op.deck.length}</span><span class="cnt" title="Scrap">${SCRAP_ICON}${op.scrap.length}</span></span><button class="viewbtn" data-cmd="opview" aria-expanded="${opFull}">${opFull ? "Compact ▴" : "View board ▾"}</button>`);
+  shell.opSide.classList.toggle("expanded", opFull);
   setHTML(shell.opForm, order.map((i) => baseHTML(op.pos[i], "op", i)).join(""));
   setHTML(shell.meForm, order.map((i) => baseHTML(me.pos[i], "me", i)).join(""));
-  setHTML(shell.meHead, `<h2>YOU · ${me.deckName === "CUSTOM" ? "YOUR DECK" : me.deckName}</h2><span class="sub">Deck ${me.deck.length} · Scrap ${me.scrap.length}</span>`);
+  setHTML(shell.meHead, `<h2>YOU · ${me.deckName === "CUSTOM" ? "YOUR DECK" : me.deckName}</h2><span class="sub"><span class="cnt" title="Deck">${DECK_ICON}${me.deck.length}</span><span class="cnt" title="Scrap">${SCRAP_ICON}${me.scrap.length}</span></span>`);
   setHTML(shell.hand, me.hand.map(tileHTML).join("") || `<div class="note">Hand empty.</div>`);
   setHTML(shell.ctrl, controlsHTML());
   const sheet = sheetHTML();
@@ -1727,7 +1820,7 @@ function edCmd(c) {
   if (op === "base") {
     const i = ed.bases.indexOf(arg);
     if (i >= 0) ed.bases.splice(i, 1); else if (ed.bases.length < 3) ed.bases.push(arg);
-  } else if (op === "add") { if ((ed.counts[arg] || 0) < 2 && edTotal() < 20 && typesOf(ed.bases).has(CARDS[arg].type)) ed.counts[arg] = (ed.counts[arg] || 0) + 1; }
+  } else if (op === "add") { if ((ed.counts[arg] || 0) < MAX_COPIES && edTotal() < DECK_SIZE && typesOf(ed.bases).has(CARDS[arg].type)) ed.counts[arg] = (ed.counts[arg] || 0) + 1; }
   else if (op === "sub") { if (ed.counts[arg]) { ed.counts[arg]--; if (!ed.counts[arg]) delete ed.counts[arg]; } }
   else if (op === "filter") ed.filter = arg;
   else if (op === "clear") { ed.bases = []; ed.counts = {}; }
@@ -1743,7 +1836,7 @@ function poolCardHTML(name) {
   const tmp = cardHTML({ def: d, uid: 0 }, -1).replace(/<div class="cfoot">[\s\S]*<\/div><\/div>$/, "");
   const pay = d.playable === false ? `<span class="lbl">Burn only</span>` : `<span class="cost"><span class="lbl">${d.kind === "PART" ? "Install" : "Play"}</span>&nbsp;${costPips(d.cost)}</span>`;
   return tmp.replace('class="card ', `class="card ${n ? "indeck" : ""} ${ok ? "" : "offtype"} `).replace('tabindex="0" role="button"', "").replace(/data-hand="-1"/, "") +
-    `<div class="cfoot">${pay}<span class="qty"><button data-cmd="ed:sub|${name}" ${n ? "" : "disabled"} aria-label="Remove one ${name}">−</button><b>${n}</b><button data-cmd="ed:add|${name}" ${n < 2 && edTotal() < 20 && ok ? "" : "disabled"} title="${ok ? "" : `Needs a ${t.name} robot`}" aria-label="Add one ${name}">+</button></span></div></div>`;
+    `<div class="cfoot">${pay}<span class="qty"><button data-cmd="ed:sub|${name}" ${n ? "" : "disabled"} aria-label="Remove one ${name}">−</button><b>${n}</b><button data-cmd="ed:add|${name}" ${n < MAX_COPIES && edTotal() < DECK_SIZE && ok ? "" : "disabled"} title="${ok ? "" : `Needs a ${t.name} robot`}" aria-label="Add one ${name}">+</button></span></div></div>`;
 }
 function renderEditor() {
   const prevModal = document.querySelector('#overlay .modal.wide'), keepScroll = prevModal ? prevModal.scrollTop : 0;
@@ -1758,13 +1851,13 @@ function renderEditor() {
   const bars = Object.entries(byType).filter(([, n]) => n).map(([k, n]) => `<i style="width:${(n / Math.max(total, 1)) * 100}%;background:${colors[k]}" title="${TYPES[k].name} ${n}"></i>`).join("");
   const warns = [];
   if (ed.bases.length !== 3) warns.push(`<span class="bad">Pick ${3 - ed.bases.length} more robot${3 - ed.bases.length === 1 ? "" : "s"}.</span>`);
-  if (total !== 20) warns.push(`<span class="bad">Add ${20 - total} more card${20 - total === 1 ? "" : "s"}.</span>`);
-  if (total && movers < 4) warns.push(`<span class="meh">Only ${movers} part${movers === 1 ? "" : "s"} with a move. Most decks want 5 or more.</span>`);
+  if (total !== DECK_SIZE) warns.push(`<span class="bad">Add ${DECK_SIZE - total} more card${DECK_SIZE - total === 1 ? "" : "s"}.</span>`);
+  if (total && movers < 6) warns.push(`<span class="meh">Only ${movers} part${movers === 1 ? "" : "s"} with a move. Most decks want 8 or more.</span>`);
   const allowed = typesOf(ed.bases);
   const offCards = Object.keys(ed.counts).filter((n) => !allowed.has(CARDS[n].type));
   if (offCards.length) warns.push(`<span class="bad">No robot matches ${offCards.join(", ")}. Remove ${offCards.length === 1 ? "it" : "them"} or pick a matching robot.</span>`);
   if (!ed.bases.length) warns.push(`<span class="meh">Pick robots first: you can only add cards of their types (plus NEUTRAL).</span>`);
-  if (ed.bases.length === 3 && total === 20 && !warns.some((w) => w.includes("bad"))) warns.unshift(`<span class="good">Deck is ready to play.</span>`);
+  if (ed.bases.length === 3 && total === DECK_SIZE && !warns.some((w) => w.includes("bad"))) warns.unshift(`<span class="good">Deck is ready to play.</span>`);
   const list = Object.entries(ed.counts).sort((a, b) => "PLSTSPAQNE".indexOf(CARDS[a[0]].type) - "PLSTSPAQNE".indexOf(CARDS[b[0]].type) || a[0].localeCompare(b[0]))
     .map(([n, k]) => `<div><span class="n">${k}×</span><span class="pip sm ${TYPES[CARDS[n].type].cls}">${ICON[CARDS[n].type]}</span>${n}</div>`).join("") || `<div class="lbl">No cards yet</div>`;
   const fbtn = (k, label) => `<button class="${ed.filter === k ? "on" : ""}" data-cmd="ed:filter|${k}">${label}</button>`;
@@ -1773,19 +1866,19 @@ function renderEditor() {
     <div class="ed"><div>
       <h3>Robots · pick 3 <span class="lbl">(first pick is your default front)</span></h3>
       <div class="basegrid">${Object.keys(BASES).map((b) => { const i = ed.bases.indexOf(b), B0 = BASES[b];
-        return `<button class="bpick ${i >= 0 ? "on" : ""}" data-cmd="ed:base|${b}" ${i < 0 && ed.bases.length >= 3 ? "disabled" : ""}>${i >= 0 ? `<span class="ord">${i + 1}</span>` : ""}<div class="spin" role="img" aria-label="${b}" style="background-image:url(${SPIN[b]})"></div><b>${b}</b>${typeBadge(B0.type)}<small>${B0.hp} HP ${slotPips(B0.slots, 0)}</small></button>`; }).join("")}</div>
-      <h3 style="margin-top:14px">Cards · max 2 of each <span class="lbl">(must match one of your robots\' types, or NEUTRAL)</span></h3>
+        return `<button class="bpick ${i >= 0 ? "on" : ""}" data-cmd="ed:base|${b}" ${i < 0 && ed.bases.length >= 3 ? "disabled" : ""}>${i >= 0 ? `<span class="ord">${i + 1}</span>` : ""}<div class="spin" role="img" aria-label="${b}" style="background-image:url(${SPIN[b]})"></div><b>${b}</b>${typeBadge(B0.type)}<small>${hpBar(B0.hp, B0.hp, "sm")}${slotPips(B0.slots, 0)}</small></button>`; }).join("")}</div>
+      <h3 style="margin-top:14px">Cards · up to 3 of each <span class="lbl">(must match one of your robots\' types, or NEUTRAL)</span></h3>
       <div class="filters">${fbtn("ALL", "All")}${fbtn("PL", "Plasma")}${fbtn("ST", "Steel")}${fbtn("SP", "Spark")}${fbtn("AQ", "Liquid")}${fbtn("NE", "Neutral")}${fbtn("PART", "Parts")}${fbtn("PLAY", "Plays")}</div>
       <div class="poolgrid">${names.map(poolCardHTML).join("")}</div>
     </div>
     <aside class="summary">
       <div id="edinfo">${edHover && BASES[edHover] ? baseInfoHTML(edHover) : `<div class="binfo empty">Hover a robot to spin it and read its ability.</div>`}</div>
-      <div><span class="lbl">Cards</span><div class="count ${total === 20 ? "ok" : ""}">${total} / 20</div></div>
+      <div><span class="lbl">Cards</span><div class="count ${total === DECK_SIZE ? "ok" : ""}">${total} / ${DECK_SIZE}</div></div>
       <div class="typebars">${bars}</div>
       <div><span class="lbl">Robots</span><div>${ed.bases.map((b, i) => `${i + 1}. <b>${b}</b>`).join(" · ") || "none yet"}</div></div>
       <div class="warns">${warns.join("")}</div>
       <div class="dlist">${list}</div>
-      <button class="primary" data-cmd="ed:save" ${ed.bases.length === 3 && total === 20 && !offCards.length ? "" : "disabled"}>Save deck and play</button>
+      <button class="primary" data-cmd="ed:save" ${ed.bases.length === 3 && total === DECK_SIZE && !offCards.length ? "" : "disabled"}>Save deck and play</button>
       <div class="btnrow">${["IGNITION", "TIDEWALL", "FORGE", "CYCLE"].map((n) => `<button data-cmd="ed:start|${n}">${n}</button>`).join("")}</div><span class="lbl">Start from a starter deck</span>
       <div class="btnrow"><button data-cmd="ed:clear">Clear</button><button data-cmd="ed:cancel">Back</button></div>
     </aside></div>
