@@ -767,6 +767,16 @@ button[aria-disabled="true"]:hover { filter: grayscale(1); opacity: .7; }
 
 /* logo: flat solid blue, no gradient or shadow */
 .logo, .logo.big { background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #0a5cff !important; -webkit-text-fill-color: #0a5cff; filter: none !important; text-shadow: none !important; -webkit-text-stroke: 0 !important; }
+/* phones: no arena, one-line log, spare space left empty above the controls */
+@media (max-width: 820px) {
+  .arena { display: none !important; }
+  .app.game { grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto !important; }
+  .app.game .gbar { grid-row: 1; } .side.op { grid-row: 2; } .ticker { grid-row: 3; } .side.me { grid-row: 4; } .dock { grid-row: 6; } .handbar { grid-row: 7; }
+  .ticker { display: block !important; height: auto !important; max-height: none !important; padding: 3px 10px; font-size: 11.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-width: 1.5px; box-shadow: none; }
+  .ticker > div { overflow: hidden; text-overflow: ellipsis; }
+  .ticker::after { content: "log ›"; position: absolute; right: 8px; top: 50%; translate: 0 -50%; font-size: 10px; font-weight: 800; color: var(--accent); background: #fff; padding-left: 6px; }
+  .ticker { position: relative; padding-right: 44px; }
+}
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 
@@ -1894,7 +1904,7 @@ function tileHTML(c, i) {
   const cost = d.playable === false ? `<span class="pip free">BURN</span>` : d.cost.length ? costPips(d.cost) : `<span class="pip free">FREE</span>`;
   const canQ = myTurnIdle() && canBurn(G.p[ME]);
   const usable = !myTurnIdle() ? true : d.kind === "PART" ? installTargets(G, ME, d).length > 0 : d.playable ? playLegal(G, ME, d) : canBurn(G.p[ME]);
-  return `<div class="tile t-${t.cls} ${ui.sel === i ? "sel" : ""} ${usable ? "" : "cant"}" data-hand="${i}" tabindex="0" role="button" aria-label="${d.name}, ${kind}, ${t.name}. Tap for details">
+  return `<div class="tile t-${t.cls} ${ui.sel === i ? "sel" : ""}" data-hand="${i}" tabindex="0" role="button" aria-label="${d.name}, ${kind}, ${t.name}. Tap for details">
     <span class="gem ${t.cls}">${ICON[d.type]}</span>
     <span class="tkind ${kind}">${kind === "BATTERY" ? "BATT" : kind}</span>
     <div class="tpod"><img src="${CARDART[d.name]}" alt=""></div>
@@ -1942,7 +1952,7 @@ function render() {
   setHTML(shell.sheet, sheet ? `<div class="sheetwrap"><div class="scrim" data-cmd="${ui.sel != null || ui.mode ? "cancel" : "closepeek"}"></div><div class="panel sheet" role="dialog" aria-label="Details">${sheet}</div></div>` : "");
   if (shell.logN !== logs.length) {
     const lg = shell.log, stick = lg.scrollHeight - lg.scrollTop - lg.clientHeight < 40;
-    setHTML(shell.ticker, logs.slice(-3).map((l) => `<div class="${l.cls}">${l.msg}</div>`).join(""));
+    setHTML(shell.ticker, logs.slice(-1).map((l) => `<div class="${l.cls}">${l.msg}</div>`).join(""));
     setHTML(lg, logs.slice(-80).map((l) => `<div class="${l.cls}">${l.msg}</div>`).join(""));
     if (stick) lg.scrollTop = lg.scrollHeight;
     shell.logN = logs.length;
