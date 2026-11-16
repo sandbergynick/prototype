@@ -6,7 +6,7 @@
 <title>PROTOTYPE Duel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Exo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Exo+2:wght@600;800;900&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   /* Frutiger Aero arena: bright sky behind near-opaque glossy cards; type colour + icon carry classification */
@@ -470,6 +470,53 @@ button.primary:hover:not(:disabled) { box-shadow: 0 4px 0 #0a3fb8; }
   clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
 @media (max-width: 820px) { #coach { font-size: 13px; padding: 8px 10px 10px; } }
 
+/* ===== round 2 ===== */
+html, body, button, .tile, .base, .card, label { touch-action: manipulation; }
+/* logo: digital blue, bold sans, letters touching, slight italic */
+.logo { font-family: "Exo 2", var(--display); font-weight: 900; font-style: normal; letter-spacing: -0.075em; padding-right: .12em; transform: skewX(-9deg);
+  background: linear-gradient(180deg, #7fe3ff 0%, #2fa6ff 38%, #0a5cff 62%, #0a3cc8 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 0; filter: drop-shadow(0 1.5px 0 #ffffff) drop-shadow(0 3px 5px rgba(10,70,220,.35)); }
+.logo::after { display: none; }
+.logo.big { font-size: clamp(40px, 9vw, 64px); -webkit-text-stroke: 0; padding-right: .15em; filter: drop-shadow(0 2px 0 #ffffff) drop-shadow(0 5px 10px rgba(10,70,220,.35)); }
+/* slot pips */
+.spips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.spips i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--tc, var(--cyan)); background: #fff; box-sizing: border-box; }
+.spips i.on { background: radial-gradient(circle at 35% 30%, #fff 0 12%, var(--tc, var(--cyan)) 45%); }
+.chead .cslots { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+.chead .cslots .lbl { color: inherit; opacity: .8; font-size: 9px; }
+.chead .cslots .spips i { border-color: #fff; background: transparent; } .chead .cslots .spips i.on { background: #fff; }
+.chead .cslots + .kind { margin-left: 6px; }
+.tcost { align-items: center; gap: 4px; } .tcost .spips { margin-left: 2px; } .tcost .spips i { width: 9px; height: 9px; }
+.slotrow .spips i { width: 11px; height: 11px; }
+/* robot tile: pod with name plate in front of the art */
+.base { container-type: inline-size; grid-template-columns: 112px minmax(0, 1fr); }
+.pod { width: 100%; padding: 6px 6px 34px; }
+.pod .ped { bottom: 30px; }
+.pod .plate { position: absolute; left: 4px; right: 4px; bottom: 4px; z-index: 2; height: 24px; box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.plate .pc { font-size: 15px; padding: 0 6px 0 13px; justify-content: center; }
+.plate .pd { padding: 0 12px 0 6px; }
+@container (max-width: 250px) {
+  .base { grid-template-columns: minmax(0, 1fr); justify-items: stretch; }
+  .base .bmain { width: 100%; }
+  .abl .abd { display: none; }
+}
+@media (max-width: 820px) {
+  .base { grid-template-columns: minmax(0, 1fr); }
+  .pod { padding: 4px 4px 26px; } .pod .ped { bottom: 23px; }
+  .pod .plate { height: 19px; left: 3px; right: 3px; bottom: 3px; }
+  .plate .pc { font-size: 12px; padding: 0 3px 0 10px; } .plate .pd { padding: 0 9px 0 4px; } .plate .pd .ti { width: 10px; height: 10px; }
+  .slotrow { display: flex !important; } .slotrow .spips i { width: 8px; height: 8px; border-width: 1.5px; }
+}
+/* rotate button icon */
+.roticon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: -4px; margin-right: 4px; }
+.rotbtn small { font-weight: 700; opacity: .7; margin-left: 2px; }
+/* AI step-through */
+.aidid { font-size: 13.5px; line-height: 1.45; padding: 6px 8px; border-radius: 6px; background: #f2fbff; border: 1.5px solid #bfeaff; max-height: 120px; overflow-y: auto; }
+.nextbtn { min-width: 120px; font-size: 15px !important; }
+.autoai { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+.autoai input { width: 16px; height: 16px; accent-color: #0a6dff; }
+@media (max-width: 820px) { .aidid { max-height: 64px; font-size: 12.5px; } }
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 
@@ -563,7 +610,7 @@ const BASES = {
 
 const CARDS = {
   "Plasma Ribbon": PT("Plasma Ribbon", "PL", [["PL", 1]], { move: mv("Plasma Ribbon", "CLOSE", 3, [["PL", 1]]) }),
-  "Flare Lance": PT("Flare Lance", "PL", [["PL", 1], ["any", 1]], { slots: 2, move: mv("Flare Lance", "CLOSE", 5, [["PL", 2]], ["scorch"]), text: "Heavy: takes 2 slots." }),
+  "Flare Lance": PT("Flare Lance", "PL", [["PL", 1], ["any", 1]], { slots: 2, move: mv("Flare Lance", "CLOSE", 5, [["PL", 2]], ["scorch"]), text: "Heavy." }),
   "Ion Fist": PT("Ion Fist", "SP", [], { move: mv("Ion Fist", "CLOSE", 2, [["SP", 1]], ["rot+1"]) }),
   "Arc Lash": PT("Arc Lash", "SP", [["SP", 1]], { move: mv("Arc Lash", "FAR", 2, [["SP", 1]], ["chain1"]) }),
   "Turbo Fins": PT("Turbo Fins", "SP", [], { passive: "draw_on_rotin", text: "When this BASE rotates into the front, draw 1." }),
@@ -579,7 +626,7 @@ const CARDS = {
   "Power Cell": PY("Power Cell", "SP", [], "", "Burn only.", { burn: 2, playable: false }),
   "Tide Ring": PT("Tide Ring", "AQ", [["AQ", 1]], { move: mv("Tide Ring", "FAR", 2, [["AQ", 1]], ["cool"]) }),
   "Bubble Burst": PT("Bubble Burst", "AQ", [], { move: mv("Bubble Burst", "CLOSE", 2, [["AQ", 1], ["any", 1]], ["pop"]) }),
-  "Undertow": PT("Undertow", "AQ", [["AQ", 1]], { slots: 2, move: mv("Undertow", "FAR", 3, [["AQ", 1], ["any", 1]], ["cool"]), text: "Heavy: takes 2 slots." }),
+  "Undertow": PT("Undertow", "AQ", [["AQ", 1]], { slots: 2, move: mv("Undertow", "FAR", 3, [["AQ", 1], ["any", 1]], ["cool"]), text: "Heavy." }),
   "Piston Fist": PT("Piston Fist", "ST", [["ST", 1]], { move: mv("Piston Fist", "CLOSE", 4, [["ST", 1], ["any", 1]]) }),
   "Chrome Halo": PT("Chrome Halo", "ST", [["ST", 1]], { passive: "armor1", text: "Blocks the first 1 damage this BASE takes each turn." }),
   "Anchor Clamp": PT("Anchor Clamp", "ST", [["ST", 1]], { passive: "anchor", text: "While this BASE is in front, the opponent's rotation costs 2." }),
@@ -1020,6 +1067,7 @@ for (const M of [ART, CARDART]) for (const k in M) { const im = new Image(); im.
 // ================================================================ UI
 let G = null, ui = { sel: null, mode: null, move: null }, busy = false, fxq = [], hits = new Set(), logs = [];
 const $ = (s) => document.querySelector(s);
+const ROT_ICON = `<svg class="roticon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10a7.5 7.5 0 0 1 13.2-3.6" /><path d="M19.5 14a7.5 7.5 0 0 1-13.2 3.6" /><path d="M18.6 2.8v4.1h-4.1" /><path d="M5.4 21.2v-4.1h4.1" /></svg>`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ME = 0, AI = 1;
 
@@ -1060,7 +1108,7 @@ function baseInfoHTML(b, big = true) {
   const B0 = BASES[b], m = B0.stock, ab = splitAbility(B0.text);
   return `<div class="binfo"><div class="spin ${big ? "big" : ""}" data-spin="${b}" style="background-image:url(${SPIN[b]})"></div><div>
     <h4>${b}</h4>${typeBadge(B0.type)}
-    <div class="stat">${B0.hp} HP · ${B0.slots} slot${B0.slots === 1 ? "" : "s"}</div>
+    <div class="stat">${B0.hp} HP <span class="lbl">Slots</span> ${slotPips(B0.slots, 0)}</div>
     <div class="ab"><span class="lbl">Stock move</span>${m ? `<b>${m.name}</b>${moveText(m)}${m.cost.length ? ` · ${costPips(m.cost)}` : " · free"}` : "<b>None</b>Needs a part to attack."}</div>
     <div class="ab"><span class="lbl">${ab.tag || "Ability"}</span><b>${ab.name}</b>${ab.desc}</div></div></div>`;
 }
@@ -1131,8 +1179,9 @@ function installCustom() {
 }
 let setupSel = { me: "IGNITION", ai: "TIDEWALL" };
 
-function showSetup() {
+function showSetup(keep) {
   if (TUT) tutEnd();
+  const pOv = keep && document.querySelector('#overlay .overlay'), pMo = pOv && pOv.querySelector('.modal'), st = pOv ? [pOv.scrollTop, pMo.scrollTop] : null, rulesOpen = !!(pOv && pOv.querySelector('details.rules[open]'));
   installCustom();
   const opt = (n, side) => {
     const dk = DECKS[n];
@@ -1150,15 +1199,16 @@ function showSetup() {
     <h3 class="lbl" style="font-size:12px">AI's deck</h3>
     <div class="optrow">${["IGNITION", "TIDEWALL", "FORGE", "CYCLE"].map((n) => opt(n, "ai")).join("")}<button class="deckpick ${setupSel.ai === "RANDOM" ? "on" : ""}" data-set="ai:RANDOM"><strong>RANDOM</strong><span>Any of the four starter decks.</span></button></div>
     <div class="btnrow"><button class="primary" data-cmd="tofront">Next: choose your front robot</button><button data-cmd="editor">${DECKS.CUSTOM ? "Edit your deck" : "Open deck editor"}</button></div>
-    <details class="rules"><summary><b>Quick rules</b></summary>${rulesHTML()}</details>
+    <details class="rules" ${rulesOpen ? "open" : ""}><summary><b>Quick rules</b></summary>${rulesHTML()}</details>
   </div></div>`;
+  if (st) { const o = document.querySelector('#overlay .overlay'); o.scrollTop = st[0]; o.querySelector('.modal').scrollTop = st[1]; }
 }
 function pickFront(deck) {
   const bs = DECKS[deck].bases;
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel">
     <h2>Who starts in front?</h2>
     <p>Your FRONT robot does the fighting; the other two sit in support. You can rotate for free once per turn.</p>
-    <div class="frontpick">${bs.map((b, i) => `<button data-front="${i}"><img src="${ART[b]}" alt="${b}"><b>${b}</b><small>${BASES[b].hp} HP · ${BASES[b].slots} slots<br>${rich(BASES[b].text)}</small></button>`).join("")}</div>
+    <div class="frontpick">${bs.map((b, i) => `<button data-front="${i}"><img src="${ART[b]}" alt="${b}"><b>${b}</b><small>${BASES[b].hp} HP ${slotPips(BASES[b].slots, 0)}<br>${rich(BASES[b].text)}</small></button>`).join("")}</div>
   </div></div>`;
   document.querySelectorAll("[data-front]").forEach((b) => b.onclick = () => startGame(deck, +b.dataset.front, setupSel.ai));
 }
@@ -1178,6 +1228,7 @@ function rulesHTML() {
 }
 
 function startGame(deck, frontIdx, aiChoice) {
+  if (aiWait) { aiWait = null; }
   const starters = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE"];
   const aiDeck = aiChoice === "RANDOM" || !aiChoice ? starters[(Math.random() * 4) | 0] : aiChoice;
   logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1;
@@ -1210,17 +1261,26 @@ function checkEnd() {
   return true;
 }
 
+let aiWait = null;
+const aiAuto = () => { try { return localStorage.getItem("prototype.aiAuto") === "1"; } catch (e) { return false; } };
+function aiPause(fromLog) {
+  if (aiAuto() || G.winner !== null) return sleep(650);
+  return new Promise((res) => { aiWait = { res, from: fromLog }; render(); });
+}
+function aiNext() { if (!aiWait) return; const r = aiWait.res; aiWait = null; render(); r(); }
+addEventListener("keydown", (e) => { if (aiWait && (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") && !e.target.closest("input,textarea")) { e.preventDefault(); aiNext(); } });
 async function aiTurn() {
   busy = true; log(`Turn ${G.turn + 1} · AI's turn`, "sys"); render();
-  await sleep(500);
+  await sleep(400);
   let done = false;
   while (!done && G.winner === null) {
     const plan = planTurn(G, 160);
     for (const a of plan) {
       const L = legal(G, G.cur);
       if (!L[a[0]].some((b) => sameAct(a, b))) break;
+      const from = logs.length;
       const r = doAction(G, a);
-      render(); await sleep(a[0] === "burn" ? 320 : 700);
+      render(); await aiPause(from);
       if (G.winner !== null || r === "end") { done = true; break; }
       if (a[0] === "play" || a[0] === "rot") break;
     }
@@ -1268,6 +1328,8 @@ function onCmd(cmd) {
   if (cmd === "new") return showSetup();
   if (cmd === "closepeek") { if (ui.peek) { ui = { ...ui, peek: null }; render(); } return; }
   if (cmd === "openlog") { if (G) { ui = { ...ui, sel: null, peek: { k: "log" } }; render(); } return; }
+  if (cmd === "ainext") return aiNext();
+  if (cmd === "aiauto") { try { localStorage.setItem("prototype.aiAuto", aiAuto() ? "0" : "1"); } catch (e) {} if (aiAuto() && aiWait) return aiNext(); return render(); }
   if (cmd === "rules" && !G) return;
   if (!G || busy || G.cur !== ME) return;
   if (TUT && tutStep() && tutStep().lock && (cmd === "end" || cmd === "rotate")) return tutNudge();
@@ -1296,6 +1358,9 @@ function onCmd(cmd) {
 // ---------------------------------------------------------------- render
 
 const myTurnIdle = () => !!G && G.cur === ME && !busy && G.winner === null && (!ui.mode || ui.mode === null);
+function slotPips(total, filled = 0, title = "") {
+  return `<span class="spips" title="${title || `${filled} of ${total} slots filled`}" aria-label="${title || `${filled} of ${total} slots filled`}">${Array.from({ length: total }, (_, k) => `<i class="${k < filled ? "on" : ""}"></i>`).join("")}</span>`;
+}
 function cardHTML(c, i) {
   const d = c.def, t = TYPES[d.type];
   const kind = d.kind === "PLAY" && d.playable === false ? "BATTERY" : d.kind;
@@ -1307,14 +1372,13 @@ function cardHTML(c, i) {
         ? `<span class="sync ${t.cls}" title="On a ${t.name} robot (SYNC +${m.sync ?? 1})">${ICON[d.type]}${m.fx.includes("x") ? "X+" + (m.sync ?? 1) : m.dmg + (m.sync ?? 1)}</span>` : "";
       body += `<div class="mvbox"><span class="lbl">Move · ${m.rng}</span><div class="mvtop"><span class="dmgline"><b>${dmgLabel(m)}</b>${syn}</span><span class="cost">${m.fx.includes("x") ? '<span class="pip free">ALL</span>' : costPips(m.cost)}</span></div>${fx ? `<div>${fx}</div>` : ""}</div>`;
     }
-    if (d.slots === 2) body += `<div><span class="lbl">Heavy</span> Takes 2 slots.</div>`;
     if (d.passive) body += `<div><span class="lbl">Passive</span><br>${rich(d.text)}</div>`;
     if (d.onAttach) body += `<div><span class="lbl">On attach</span><br>${rich(d.text)}</div>`;
   } else if (d.playable === false) body = `<div>No effect. Burn it for ${costPips([[d.type, d.burn]])}</div>`;
   else body = `<div><span class="lbl">Effect</span><br>${rich(d.text)}</div>`;
   const pay = d.playable === false ? `<span class="lbl">Burn only</span>` : `<span class="cost"><span class="lbl">${d.kind === "PART" ? "Install" : "Play"}</span>&nbsp;${costPips(d.cost)}</span>`;
   return `<div class="card t-${t.cls} ${ui.sel === i ? "sel" : ""}" data-hand="${i}" tabindex="0" role="button" aria-label="${d.name}, ${kind}, ${t.name}">
-    <div class="chead">${ICON[d.type]}${t.name}<span class="kind ${kind}">${kind}</span></div>
+    <div class="chead">${ICON[d.type]}${t.name}${d.kind === "PART" ? `<span class="cslots"><span class="lbl">Slots</span>${slotPips(d.slots, d.slots, `Takes ${d.slots} slot${d.slots > 1 ? "s" : ""}`)}</span>` : ""}<span class="kind ${kind}">${kind}</span></div>
     <div class="cname">${CARDART[d.name] ? `<img class="cart" src="${CARDART[d.name]}" alt="">` : ""}${d.name}</div>
     <div class="cbody">${body}</div>
     <div class="cfoot">${pay}<button class="qburn" data-qburn="${i}" ${myTurnIdle() && canBurn(G.p[ME]) ? "" : "disabled"} title="Burn this card for ${d.burn} ${t.name} energy">Burn +${d.burn}</button></div></div>`;
@@ -1368,7 +1432,7 @@ function baseHTML(b, side, pos) {
   }
   const pct = Math.max(0, (b.hp / b.d.hp) * 100);
   const used = usedSlots(b);
-  const slots = Array.from({ length: b.d.slots }, (_, i) => `<i class="${i < used ? "on" : ""}"></i>`).join("");
+  const slots = slotPips(b.d.slots, used);
   const ab = splitAbility(b.d.text);
   const active = ab.tag === "ALWAYS" || (ab.tag === "FRONT") === isFront;
   const st = [];
@@ -1383,11 +1447,10 @@ function baseHTML(b, side, pos) {
   return `<div class="base t-${TYPES[b.d.type].cls} ${isFront ? "front" : ""} ${target ? "target" : ""} ${peeked ? "peeked" : ""} ${hits.has(b.uid) ? "hit" : ""}" data-side="${side}" data-pos="${pos}" tabindex="0" role="button" aria-label="${b.d.name}, ${b.hp} of ${b.d.hp} HP${target ? ", tap to choose" : ", tap for details"}">
     <span class="gem ${TYPES[b.d.type].cls}" title="${TYPES[b.d.type].name}">${ICON[b.d.type]}</span>
     <span class="postag">${isFront ? "FRONT" : "SUPPORT"}</span>
-    <div class="pod"><img class="art" src="${ART[b.d.name]}" alt=""><i class="ped"></i></div>
+    <div class="pod"><img class="art" src="${ART[b.d.name]}" alt=""><i class="ped"></i><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div></div>
     <div class="bmain">
-      <div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div>
       <div class="hprow"><span class="hpnum">${b.hp}<small>/${b.d.hp}</small></span><div class="hp ${pct <= 34 ? "low" : ""}"><i style="width:${pct}%"></i></div></div>
-      <div class="slotrow"><span class="slots">${slots}</span>${b.parts.map(partChip).join("")}</div>
+      <div class="slotrow">${slots}${b.parts.map(partChip).join("")}</div>
       <div class="abl ${active ? "" : "off"}"><span class="tag ${ab.tag}">${ab.tag}</span><b>${ab.name}</b><span class="abd"> · ${ab.desc}</span></div>
       ${st.length ? `<div class="status">${st.join("")}</div>` : ""}
     </div>${pops}</div>`;
@@ -1415,7 +1478,12 @@ function movesHTML() {
 function controlsHTML() {
   const me = G.p[ME];
   if (G.winner !== null) return `<div class="hint">Game over.</div><div class="btnrow"><button class="primary" data-cmd="new">New game</button></div>`;
-  if (G.cur !== ME) return `<div class="hint wait">The AI is taking its turn…</div>`;
+  if (G.cur !== ME) {
+    const auto = `<label class="autoai"><input type="checkbox" data-cmd="aiauto" ${aiAuto() ? "checked" : ""}> Auto-play AI turns</label>`;
+    if (!aiWait) return `<div class="hint wait">The AI is thinking…</div>${auto}`;
+    const did = logs.slice(aiWait.from).map((l) => `<div class="${l.cls}">${l.msg}</div>`).join("") || "<div>…</div>";
+    return `<div class="lbl">AI's move</div><div class="aidid">${did}</div><div class="btnrow tight"><button class="primary nextbtn" data-cmd="ainext">Next <span aria-hidden="true">▸</span></button></div>${auto}`;
+  }
   const pool = Object.entries(me.pool).flatMap(([k, n]) => Array.from({ length: n }, () => `<span class="pip sm ${TYPES[k].cls}">${ICON[k]}</span>`)).join("") || `<span class="none">no energy</span>`;
   let hint = "Tap a card, rotate, or attack.";
   if (ui.mode === "install") hint = "Tap one of your robots to install it on.";
@@ -1432,7 +1500,7 @@ function controlsHTML() {
   return `<div class="energy"><span class="lbl">Energy</span><span class="poolpips">${pool}</span><span class="burns ${canBurn(me) ? "" : "out"}">${Math.max(0, me.turns - me.burns)} burn${me.turns - me.burns === 1 ? "" : "s"} left</span></div>
     <div class="hint">${hint}</div>
     ${movesHTML()}
-    <div class="btnrow tight">${cancel}<button data-cmd="rotate" ${canRot && !ui.mode ? "" : "disabled"}>Rotate ${rc.length ? "(2)" : me.rotUsed ? "✓" : "free"}</button><button data-cmd="end" ${ui.mode ? "disabled" : ""}>End turn</button></div>`;
+    <div class="btnrow tight">${cancel}<button class="rotbtn" data-cmd="rotate" ${canRot && !ui.mode ? "" : "disabled"} title="Swap a support robot into the front (once per turn)">${ROT_ICON}Rotate <small>${rc.length ? "costs 2" : me.rotUsed ? "used" : "free"}</small></button><button data-cmd="end" ${ui.mode ? "disabled" : ""}>End turn</button></div>`;
 }
 function pickerHTML() {
   const me = G.p[ME];
@@ -1456,8 +1524,8 @@ function pickerHTML() {
 function baseDetailHTML(side, pos) {
   const p = G.p[side === "me" ? ME : AI], b = p.pos[pos];
   if (!b) return "";
-  const parts = b.parts.length ? b.parts.map((x) => `<div class="prow"><img src="${CARDART[x.name]}" alt=""><div><b>${x.name}</b>${x.move && x.installedTurn === G.turn ? ' <span class="lbl">new · ready next turn</span>' : ""}<br><small>${rich(cardText(x))}</small></div></div>`).join("") : `<div class="note">No parts installed.</div>`;
-  return `<div class="sheethead"><h3>${side === "me" ? "Your" : "Enemy"} ${pos === 0 ? "FRONT" : "support"} · ${b.hp}/${b.d.hp} HP</h3><button class="x" data-cmd="closepeek" aria-label="Close">✕</button></div>${baseInfoHTML(b.d.name)}<div class="lbl" style="margin-top:4px">Parts (${usedSlots(b)}/${b.d.slots} slots)</div>${parts}`;
+  const parts = b.parts.length ? b.parts.map((x) => `<div class="prow"><img src="${CARDART[x.name]}" alt=""><div><b>${x.name}</b> ${slotPips(x.slots, x.slots)}${x.move && x.installedTurn === G.turn ? ' <span class="lbl">new · ready next turn</span>' : ""}<br><small>${rich(cardText(x))}</small></div></div>`).join("") : `<div class="note">No parts installed.</div>`;
+  return `<div class="sheethead"><h3>${side === "me" ? "Your" : "Enemy"} ${pos === 0 ? "FRONT" : "support"} · ${b.hp}/${b.d.hp} HP</h3><button class="x" data-cmd="closepeek" aria-label="Close">✕</button></div>${baseInfoHTML(b.d.name)}<div class="lbl" style="margin-top:4px;display:flex;gap:6px;align-items:center">Parts ${slotPips(b.d.slots, usedSlots(b))}</div>${parts}`;
 }
 function sheetHTML() {
   if (!G) return "";
@@ -1486,7 +1554,7 @@ function tileHTML(c, i) {
     <span class="tkind ${kind}">${kind === "BATTERY" ? "BATT" : kind}</span>
     <div class="tpod"><img src="${CARDART[d.name]}" alt=""></div>
     <b class="tname">${d.name}</b>
-    <span class="tcost">${cost}</span>
+    <span class="tcost">${cost}${d.kind === "PART" ? slotPips(d.slots, d.slots, `Takes ${d.slots} slot${d.slots > 1 ? "s" : ""}`) : ""}</span>
     <button class="tburn" data-qburn="${i}" ${canQ ? "" : "disabled"} title="Quick burn for ${d.burn} ${t.name}" aria-label="Quick burn ${d.name}">+${d.burn}${ICON[d.type]}</button></div>`;
 }
 let shell = null;
@@ -1555,12 +1623,13 @@ const TSTEPS = [
   { title: "Attack!", text: () => (ui.mode === "attack" ? "Tap the enemy <b>FRONT</b>. CLOSE moves can only hit the front." : "Plasma Ribbon is plasma, and HAMZA is plasma, so it gets <b>SYNC +1</b> damage. Tap the move. Attacking ends your turn."),
     tgt: () => (ui.mode === "attack" ? '.side.op .base[data-pos="0"]' : [...document.querySelectorAll(".mvbtn")].find((b) => b.textContent.includes("Plasma Ribbon"))),
     done: () => G.turn >= 1, allow: (a) => a[0] === "attack" && moves(G, ME)[a[1]] && moves(G, ME)[a[1]].m.name === "Plasma Ribbon", lock: true },
-  { title: "The AI's turn", text: "Now the AI plays its turn. Watch the log to see what it does.", tgt: () => (matchMedia("(max-width: 820px)").matches ? ".ticker" : "#log"), done: () => G.cur === ME && G.turn >= 2, lock: true, wait: true },
+  { title: "The AI's turn", text: "Now the AI plays. After each of its moves the game pauses so you can see what happened. Tap <b>Next</b> to continue.", tgt: () => '[data-cmd="ainext"]' , done: () => G.cur === ME && G.turn >= 2, lock: true, wait: true },
   { title: "Rotating", text: "Your turn again. You drew a card and can now burn up to 2. Once per turn you can also <b>Rotate</b> for free, swapping a SUPPORT into the FRONT. Robots keep their parts when they move.", tgt: () => '[data-cmd="rotate"]', next: "Got it" },
   { title: "Read anything", text: "Tap any robot or card to see what it does. In the log, underlined names show their card when you hover. Colored numbers on moves are SYNC bonuses for matching types.", tgt: () => '.side.op .base[data-pos="0"]', next: "Got it" },
   { title: "You're ready", text: "That's the whole loop: <b>burn</b>, <b>install</b>, <b>play</b>, <b>rotate</b>, <b>attack</b>. Finish this fight! Rules are in the top bar any time.", tgt: () => null, next: "Let's go", end: true },
 ];
 function startTutorial() {
+  aiWait = null;
   logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1;
   G = { p: [mkPlayer("You", "IGNITION", true, 2), mkPlayer("AI", "TIDEWALL", false, 0)], cur: ME, turn: 0, winner: null, log, fx };
   const me = G.p[ME];
@@ -1623,7 +1692,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-set],[data-cmd],[data-pick],[data-qburn],[data-hand],[data-move],[data-salv],[data-pay],.base");
   if (!t) return;
-  if (t.dataset.set) { const [side, n] = t.dataset.set.split(":"); setupSel[side] = n; return showSetup(); }
+  if (t.dataset.set) { const [side, n] = t.dataset.set.split(":"); setupSel[side] = n; return showSetup(true); }
   if (t.dataset.cmd) return onCmd(t.dataset.cmd);
   if (t.dataset.move != null) return onMove(+t.dataset.move);
   if (t.dataset.salv) return act(["play", ui.sel, +t.dataset.salv]);
@@ -1704,7 +1773,7 @@ function renderEditor() {
     <div class="ed"><div>
       <h3>Robots · pick 3 <span class="lbl">(first pick is your default front)</span></h3>
       <div class="basegrid">${Object.keys(BASES).map((b) => { const i = ed.bases.indexOf(b), B0 = BASES[b];
-        return `<button class="bpick ${i >= 0 ? "on" : ""}" data-cmd="ed:base|${b}" ${i < 0 && ed.bases.length >= 3 ? "disabled" : ""}>${i >= 0 ? `<span class="ord">${i + 1}</span>` : ""}<div class="spin" role="img" aria-label="${b}" style="background-image:url(${SPIN[b]})"></div><b>${b}</b>${typeBadge(B0.type)}<small>${B0.hp} HP · ${B0.slots} slots</small></button>`; }).join("")}</div>
+        return `<button class="bpick ${i >= 0 ? "on" : ""}" data-cmd="ed:base|${b}" ${i < 0 && ed.bases.length >= 3 ? "disabled" : ""}>${i >= 0 ? `<span class="ord">${i + 1}</span>` : ""}<div class="spin" role="img" aria-label="${b}" style="background-image:url(${SPIN[b]})"></div><b>${b}</b>${typeBadge(B0.type)}<small>${B0.hp} HP ${slotPips(B0.slots, 0)}</small></button>`; }).join("")}</div>
       <h3 style="margin-top:14px">Cards · max 2 of each <span class="lbl">(must match one of your robots\' types, or NEUTRAL)</span></h3>
       <div class="filters">${fbtn("ALL", "All")}${fbtn("PL", "Plasma")}${fbtn("ST", "Steel")}${fbtn("SP", "Spark")}${fbtn("AQ", "Liquid")}${fbtn("NE", "Neutral")}${fbtn("PART", "Parts")}${fbtn("PLAY", "Plays")}</div>
       <div class="poolgrid">${names.map(poolCardHTML).join("")}</div>
