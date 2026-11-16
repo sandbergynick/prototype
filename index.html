@@ -738,6 +738,35 @@ html, body, button, .tile, .base, .card, label { touch-action: manipulation; }
   .arena { display: none !important; }
   .ticker { max-height: none !important; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
 }
+
+/* ===== attack = orange (distinct from plasma red) ===== */
+:root { --atk: #ff9a1f; --atk-d: #c45f00; --atk-l: #ffd59c; --atk-bg: #fff7ea; }
+.atkzone { border-color: var(--atk); background: linear-gradient(180deg, var(--atk-bg), #fff); box-shadow: 0 2px 0 var(--atk-l); }
+.atkzone.none { border-color: #f3cf9f; background: #fffcf6; }
+.atkhead { color: var(--atk-d); } .atkhead span { color: #a8672a; }
+.mvbtn { border-color: var(--atk); box-shadow: 0 3px 0 var(--atk-l); }
+.mvbtn:hover:not([aria-disabled="true"]) { box-shadow: 0 4px 0 #ffc06b; }
+.dmgb { background: radial-gradient(circle at 40% 35%, #fff0c2, #ffb02e 55%, #e07a00); color: #fff; text-shadow: 0 1px 0 rgba(120,50,0,.45); }
+.mvcost { align-items: center; gap: 1px; padding-left: 6px; border-left: 1.5px dashed var(--atk-l); }
+.costlbl { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--atk-d); }
+.costpips { display: flex; gap: 2px; } .costpips .pip { width: 21px; height: 21px; } .costpips .pip .ti { width: 12px; height: 12px; } .costpips .pip.free { width: auto; height: 21px; font-size: 10px; padding: 0 6px; }
+/* ===== unavailable: greyed but tappable for an explanation ===== */
+[aria-disabled="true"] { cursor: help; }
+button[aria-disabled="true"], .mvbtn.cant { filter: grayscale(1); opacity: .55; box-shadow: none !important; transform: none !important; }
+button[aria-disabled="true"]:hover { filter: grayscale(1); opacity: .7; }
+.mvbtn.cant { border-color: #d8d8d8; background: #f6f6f6; }
+.tile.cant { filter: grayscale(.85); opacity: .62; }
+.tile.cant.sel { filter: grayscale(.4); opacity: .9; }
+#whytip { position: fixed; z-index: 80; display: none; background: #fff; border: 3px solid #8aa0c0; border-radius: 10px; padding: 8px 11px; font-size: 13.5px; line-height: 1.45;
+  box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px #e3eaf5, 0 10px 26px rgba(10,40,100,.28); animation: whyin .15s ease-out; }
+#whytip .wt-h { display: block; font-family: var(--display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #5a6f91; margin-bottom: 2px; }
+#whytip .pip { width: 18px; height: 18px; vertical-align: -4px; } #whytip .pip .ti { width: 10px; height: 10px; }
+#whytip .spips { vertical-align: -1px; }
+@keyframes whyin { from { opacity: 0; translate: 0 4px; } }
+@media (max-width: 820px) { .costpips .pip { width: 18px; height: 18px; } .costpips .pip .ti { width: 10px; height: 10px; } .costlbl { font-size: 8px; } }
+
+/* logo: flat solid blue, no gradient or shadow */
+.logo, .logo.big { background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #0a5cff !important; -webkit-text-fill-color: #0a5cff; filter: none !important; text-shadow: none !important; -webkit-text-stroke: 0 !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 
@@ -1708,6 +1737,43 @@ function baseHTML(b, side, pos) {
       ${st.length ? `<div class="status">${st.join("")}</div>` : ""}
     </div>${pops}</div>`;
 }
+// ---- "why can't I?" explanations
+const WHY = {};
+function missingEnergy(p, cost, disc = 0) {
+  const pool = { ...p.pool }, need = []; let anyN = 0;
+  for (let [k, n] of cost) {
+    if (k === "any") { anyN += n; continue; }
+    const use = Math.min(pool[k] || 0, n); pool[k] -= use; n -= use;
+    const d = Math.min(disc, n); disc -= d; n -= d;
+    if (n > 0) need.push([k, n]);
+  }
+  anyN = Math.max(0, anyN - disc);
+  const left = Object.values(pool).reduce((a, b) => a + b, 0);
+  if (anyN > left) need.push(["any", anyN - left]);
+  return need;
+}
+function needText(need) {
+  return need.map(([k, n]) => `${costPips([[k, n]])} <b>${n} more ${k === "any" ? "energy of any type" : TYPES[k].name + " energy"}</b>`).join(" and ");
+}
+function cantAttr(key, html) { WHY[key] = html; return `aria-disabled="true" data-why="${key}"`; }
+function showWhy(el, html) {
+  let t = document.getElementById("whytip");
+  if (!t) { t = document.createElement("div"); t.id = "whytip"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); document.body.appendChild(t); }
+  t.innerHTML = `<b class="wt-h">Can't do that yet</b><div>${html}</div>`;
+  t.style.display = "block";
+  const r = el.getBoundingClientRect(), W = innerWidth, tw = Math.min(300, W - 16);
+  t.style.width = tw + "px";
+  const th = t.offsetHeight;
+  let x = Math.max(8, Math.min(W - tw - 8, r.left + r.width / 2 - tw / 2)), y = r.top - th - 10;
+  if (y < 8) y = r.bottom + 10;
+  t.style.left = x + "px"; t.style.top = y + "px";
+  clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = "none"), 3200);
+}
+document.addEventListener("click", (e) => {
+  const el = e.target.closest('[aria-disabled="true"][data-why]');
+  if (el) { e.preventDefault(); e.stopPropagation(); showWhy(el, WHY[el.dataset.why] || "Not available right now."); return; }
+  const t = document.getElementById("whytip"); if (t) t.style.display = "none";
+}, true);
 const SWORD_ICON = `<svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3H21v6.5L10 20.5 3.5 14 14.5 3z"/><path d="M5 19l-2 2M7.5 13.5l3 3"/></svg>`;
 function movesHTML() {
   const me = G.p[ME], b = me.pos[0];
@@ -1725,14 +1791,16 @@ function movesHTML() {
     const sb = syncBonus(b, e.part, e.m);
     const ok = attackTargets(G, ME, mi).length > 0;
     if (ok) ready++;
+    const miss = missingEnergy(me, e.m.cost, quickDisc(G, ME));
+    const why = ok ? "" : isX && poolTotal(me) < 1 ? "This move spends <b>all</b> your energy, and you have none. Burn a card first." : miss.length ? `${e.m.name} needs ${needText(miss)}. Burn a card of that type to make it.` : "No valid target for this move.";
     const fx = e.m.fx.filter((f) => f !== "x").map((f) => `<span class="fxchip">${FX[f]}</span>`).join("");
     const tag = sb ? `<span class="synctag tb-${TYPES[b.d.type].cls}">SYNC +${sb}</span>` : "";
     const hits = e.m.rng === "CLOSE" ? "hits enemy FRONT" : "hits any enemy";
-    const cost = isX ? '<span class="pip free">ALL ENERGY</span>' : e.m.cost.length ? costPips(e.m.cost) : '<span class="pip free">FREE</span>';
-    return `<button class="mvbtn ${ok ? "" : "cant"}" data-move="${mi}" ${ok ? "" : "disabled"} aria-label="${e.m.name}: ${dmg} damage, ${hits}${ok ? "" : ", can't pay yet"}">
+    const cost = isX ? '<span class="pip free">ALL</span>' : e.m.cost.length ? costPips(e.m.cost) : '<span class="pip free">FREE</span>';
+    return `<button class="mvbtn ${ok ? "" : "cant"}" data-move="${mi}" ${ok ? "" : cantAttr("mv" + mi, why)} aria-label="${e.m.name}: ${dmg} damage, ${hits}${ok ? "" : ", can't use yet"}">
       <span class="dmgb big" aria-hidden="true">${dmg}</span>
       <span class="mvmain"><span class="mvn">${e.m.name}${tag}</span><small>${RANGE_ICON[e.m.rng]}${e.m.rng} · ${hits}</small>${fx ? `<span class="mvfx">${fx}</span>` : ""}</span>
-      <span class="mvcost">${ok ? "" : '<span class="need">need</span>'}${cost}</span></button>`;
+      <span class="mvcost"><span class="costlbl">Cost</span><span class="costpips">${cost}</span></span></button>`;
   }).join("");
   return `<div class="atkzone ${ready ? "" : "none"}">${head(ready ? "pick a move · ends your turn" : "can't pay for a move yet")}<div class="moves">${btns}</div>${freshNote}</div>`;
 }
@@ -1761,7 +1829,7 @@ function controlsHTML() {
   return `<div class="energy"><span class="lbl">Energy</span><span class="poolpips">${pool}</span><span class="burns ${canBurn(me) ? "" : "out"}" title="${Math.max(0, me.turns - me.burns)} of ${me.turns} burns left this turn"><span class="lbl">Burns</span>${pipRow(Math.max(0, me.turns - me.burns), me.turns, "burnpips", 8)}</span></div>
     <div class="hint ${!ui.mode && ui.sel == null ? "idle" : ""}">${hint}</div>
     ${movesHTML()}
-    <div class="turnrow">${cancel}<button class="rotbtn" data-cmd="rotate" ${canRot && !ui.mode ? "" : "disabled"} title="Swap a support robot into the front (once per turn)">${ROT_ICON}<span>Rotate<small>${rc.length ? "costs 2" : me.rotUsed ? "used this turn" : "free · once per turn"}</small></span></button><button class="endbtn" data-cmd="end" ${ui.mode ? "disabled" : ""}><span>End turn<small>without attacking</small></span></button></div>`;
+    <div class="turnrow">${cancel}<button class="rotbtn" data-cmd="rotate" ${canRot && !ui.mode ? "" : cantAttr("rot", ui.mode ? "Finish or cancel what you're doing first." : me.rotUsed ? "You already rotated this turn. Rotating is once per turn." : ![1, 2].some((j) => me.pos[j]) ? "You have no support robots left to rotate in." : `Rotating costs ${costPips(rc)} this turn. You need ${needText(missingEnergy(me, rc))}.`)} title="Swap a support robot into the front (once per turn)">${ROT_ICON}<span>Rotate<small>${rc.length ? "costs 2" : me.rotUsed ? "used this turn" : "free · once per turn"}</small></span></button><button class="endbtn" data-cmd="end" ${ui.mode ? "disabled" : ""}><span>End turn<small>without attacking</small></span></button></div>`;
 }
 function pickerHTML() {
   const me = G.p[ME];
@@ -1788,15 +1856,30 @@ function baseDetailHTML(side, pos) {
   const parts = b.parts.length ? b.parts.map((x) => `<div class="prow"><img src="${CARDART[x.name]}" alt=""><div><b>${x.name}</b> ${slotPips(x.slots, x.slots)}${x.move && x.installedTurn === G.turn ? ' <span class="lbl">new · ready next turn</span>' : ""}<br><small>${rich(cardText(x))}</small></div></div>`).join("") : `<div class="note">No parts installed.</div>`;
   return `<div class="sheethead"><h3>${side === "me" ? "Your" : "Enemy"} ${pos === 0 ? "FRONT" : "support"}</h3><button class="x" data-cmd="closepeek" aria-label="Close">✕</button></div>${hpBar(b.hp, b.d.hp)}${baseInfoHTML(b.d.name)}<div class="lbl" style="margin-top:4px;display:flex;gap:6px;align-items:center">Parts ${slotPips(b.d.slots, usedSlots(b))}</div>${parts}`;
 }
+function playWhy(p, d) {
+  const o = G.p[AI], why = {
+    salvage: "There are no parts in your scrap to return.", heal2any: "None of your robots is damaged.", reset: "None of your robots is damaged.",
+    riptide: "The enemy has no support robot to drag in.", tutor: "Blueprint needs 2 other cards in hand to discard, and cards left in your deck.",
+    encore: "There's no PLAY card in your scrap to return.", recycle: "Your scrap pile is empty.", flood: "There's no enemy FRONT to hit.",
+  }[d.effect];
+  return why || "Its effect has nothing to do right now.";
+}
 function sheetHTML() {
   if (!G) return "";
   const mine = G.cur === ME && !busy && G.winner === null;
   if (mine && ["pay", "encore", "salvage", "tutor"].includes(ui.mode)) return pickerHTML();
   if (mine && ui.sel != null && !ui.mode) {
     const me = G.p[ME], c = me.hand[ui.sel], d = c.def;
-    let btns = `<button data-cmd="burn" ${canBurn(me) ? "" : "disabled"}>Burn <span class="cost">+${costPips([[d.type, d.burn]])}</span></button>`;
-    if (d.kind === "PART") btns += `<button class="primary" data-cmd="install" ${installTargets(G, ME, d).length ? "" : "disabled"}>Install</button>`;
-    else if (d.playable) btns += `<button class="primary" data-cmd="play" ${playLegal(G, ME, d) ? "" : "disabled"}>Play</button>`;
+    let btns = `<button data-cmd="burn" ${canBurn(me) ? "" : cantAttr("burn", `No burns left this turn. You get as many burns as your turn number (${me.turns} this turn).`)}>Burn <span class="cost">+${costPips([[d.type, d.burn]])}</span></button>`;
+    if (d.kind === "PART") {
+      let why = "";
+      if (!installTargets(G, ME, d).length) {
+        const room = alive(me).filter((j) => usedSlots(me.pos[j]) + d.slots <= me.pos[j].d.slots);
+        if (!room.length) why = `None of your robots has ${d.slots > 1 ? `${d.slots} open slots` : "an open slot"} ${slotPips(d.slots, d.slots)}. Pop a part (Factory Reset) or use a different robot.`;
+        else { const miss = missingEnergy(me, d.cost, Math.max(...room.map((j) => installDisc(me.pos[j])))); why = `Installing ${d.name} costs ${costPips(d.cost)}. You need ${needText(miss)}.`; }
+      }
+      btns += `<button class="primary" data-cmd="install" ${why ? cantAttr("install", why) : ""}>Install <span class="cost">${d.cost.length ? costPips(d.cost) : '<span class="pip free">FREE</span>'}</span></button>`;
+    } else if (d.playable) btns += `<button class="primary" data-cmd="play" ${playLegal(G, ME, d) ? "" : cantAttr("play", playWhy(me, d))}>Play <span class="cost"><span class="pip free">FREE</span></span></button>`;
     const why = !canBurn(me) ? `<div class="note">No burns left this turn.</div>` : "";
     return `<div class="sheethead"><h3>From your hand</h3><button class="x" data-cmd="cancel" aria-label="Close">✕</button></div><div class="bigcard">${cardHTML(c, -3)}</div>${why}<div class="btnrow">${btns}</div>`;
   }
@@ -1810,13 +1893,14 @@ function tileHTML(c, i) {
   const kind = d.kind === "PLAY" && d.playable === false ? "BATTERY" : d.kind;
   const cost = d.playable === false ? `<span class="pip free">BURN</span>` : d.cost.length ? costPips(d.cost) : `<span class="pip free">FREE</span>`;
   const canQ = myTurnIdle() && canBurn(G.p[ME]);
-  return `<div class="tile t-${t.cls} ${ui.sel === i ? "sel" : ""}" data-hand="${i}" tabindex="0" role="button" aria-label="${d.name}, ${kind}, ${t.name}. Tap for details">
+  const usable = !myTurnIdle() ? true : d.kind === "PART" ? installTargets(G, ME, d).length > 0 : d.playable ? playLegal(G, ME, d) : canBurn(G.p[ME]);
+  return `<div class="tile t-${t.cls} ${ui.sel === i ? "sel" : ""} ${usable ? "" : "cant"}" data-hand="${i}" tabindex="0" role="button" aria-label="${d.name}, ${kind}, ${t.name}. Tap for details">
     <span class="gem ${t.cls}">${ICON[d.type]}</span>
     <span class="tkind ${kind}">${kind === "BATTERY" ? "BATT" : kind}</span>
     <div class="tpod"><img src="${CARDART[d.name]}" alt=""></div>
     <b class="tname">${d.name}</b>
     <span class="tcost">${cost}${d.kind === "PART" ? slotPips(d.slots, d.slots, `Takes ${d.slots} slot${d.slots > 1 ? "s" : ""}`) : ""}</span>
-    <button class="tburn" data-qburn="${i}" ${canQ ? "" : "disabled"} title="Quick burn for ${d.burn} ${t.name}" aria-label="Quick burn ${d.name}">+${d.burn}${ICON[d.type]}</button></div>`;
+    <button class="tburn" data-qburn="${i}" ${canQ ? "" : myTurnIdle() ? cantAttr("qb", `No burns left this turn. You get as many burns as your turn number (${G.p[ME].turns} this turn).`) : "disabled"} title="Quick burn for ${d.burn} ${t.name}" aria-label="Quick burn ${d.name}">+${d.burn}${ICON[d.type]}</button></div>`;
 }
 let shell = null;
 function setHTML(el, html) { if (el && el.__h !== html) { el.innerHTML = html; el.__h = html; } }
