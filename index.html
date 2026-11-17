@@ -1041,7 +1041,7 @@ const BASES = {
   MAGMA: B("MAGMA", "PL", 6, 3, mv("Spit", "FAR", 1, [["PL", 1]]), "erupt", "FRONT · Eruption: MAGMA's moves deal +1 while it's damaged, or +2 at 3 HP or less."),
   SCATHE: B("SCATHE", "PL", 6, 3, null, "slowburn", "SUPPORT · Slow Burn: Scorch on enemy BASEs deals 2 each turn instead of 1."),
   SPLINT: B("SPLINT", "PL", 5, 2, mv("Pop", "CLOSE", 2), "melt", "FRONT · Short Fuse: at the end of each of your turns SPLINT spends in the front, it takes 1 damage."),
-  MANTA: B("MANTA", "AQ", 8, 2, mv("Ripple", "FAR", 1, [["AQ", 1]]), "glide", "ALWAYS · Glide: takes 1 less damage from FAR moves and 1 more from CLOSE moves."),
+  MANTA: B("MANTA", "AQ", 8, 2, mv("Ripple", "FAR", 1, [["AQ", 1]]), "slip", "SUPPORT · Slipstream: after your FRONT attacks, you may swap it with MANTA."),
   OTTO: B("OTTO", "AQ", 7, 3, null, "forage", "SUPPORT · Forage: at the start of your turn, look at the top card of your deck. You may put it on the bottom."),
   SHELL: B("SHELL", "AQ", 7, 3, mv("Paddle", "CLOSE", 1), "carapace", "FRONT · Carapace: FAR moves deal 1 less damage to your supports."),
 };
@@ -1246,7 +1246,6 @@ function damage(g, pi, idx, amt, o = {}) {
   if (!b || (amt <= 0 && o.raw)) return 0;
   if (!o.raw) {
     if (o.close && b.d.ability === "plated") amt -= 1;
-    if (b.d.ability === "glide" && amt > 0) amt += o.close ? 1 : o.far ? -1 : 0;
     if (o.far && idx !== 0 && p.pos[0] && p.pos[0].d.ability === "carapace") amt -= 1;
     const arm = b.parts.filter((x) => x.passive === "armor1").length - (b.armUsed || 0);
     if (arm > 0 && amt > 0) { const s = Math.min(arm, amt); b.armUsed = (b.armUsed || 0) + s; amt -= s; }
@@ -1361,6 +1360,7 @@ function installTargets(g, pi, c) {
   const p = g.p[pi];
   return alive(p).filter((j) => usedSlots(p.pos[j]) + c.slots <= p.pos[j].d.slots && canPay(p, c.cost, installDisc(p.pos[j], p, c)));
 }
+const slipSlot = (p) => [1, 2].find((j) => p.pos[j] && p.pos[j].d.ability === "slip") || 0;
 function attackTargets(g, pi, mi) {
   const p = g.p[pi], o = g.p[1 - pi], list = moves(g, pi);
   const e = list[mi]; if (!e || !canPay(p, e.m.cost, quickDisc(g, pi))) return [];
@@ -1460,6 +1460,8 @@ function doAction(g, a) {
     if (g.winner === null && p.overclock && p.pos[0]) { g.log(`Overclock strain on ${p.pos[0].d.name}.`); damage(g, pi, 0, 2, { raw: true }); }
     if (g.winner === null && m.fx.includes("draw1")) { g.log(`${m.name}: draw 1.`); draw(g, p); }
     if (g.winner === null && p.pos[0] === b && b.parts.some((x) => x.passive === "siphon")) { g.log("Data Siphon: draw 1."); draw(g, p); }
+    // Slipstream: the AI (and any simulated turn) decides here; a human is asked by the UI after the attack resolves
+    if (g.winner === null && p.pos[0] === b && (!p.human || g.sim)) { const mj = slipSlot(p); if (mj && b.hp < p.pos[mj].hp) swapIn(g, pi, mj, "Slipstream swaps"); }
     return "end";
   } else if (k === "end") return "end";
   return null;
@@ -1896,8 +1898,20 @@ function act(a, payPicked) {
   const r = doAction(G, a);
   ui = { sel: null, mode: null, move: null };
   if (G.winner !== null) return checkEnd();
-  if (r === "end") { render(); setTimeout(finishTurn, 450); return; }
+  if (r === "end") { render(); if (a[0] === "attack") return void slipAsk().then(() => setTimeout(finishTurn, 450)); setTimeout(finishTurn, 450); return; }
   render();
+}
+function slipAsk() {
+  const me = G.p[ME], mj = slipSlot(me);
+  if (TUT || G.winner !== null || !mj || !me.pos[0]) return Promise.resolve();
+  const f = me.pos[0], m = me.pos[mj];
+  return new Promise((res) => {
+    busy = true;
+    $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel" style="max-width:380px;justify-items:center;text-align:center"><h2>Slipstream</h2><p>Swap <b>${f.d.name}</b> (${f.hp}/${f.d.hp} HP) out for <b>MANTA</b> (${m.hp}/${m.d.hp} HP) before the enemy's turn?</p>
+      <div class="frontpick" style="grid-template-columns:1fr 1fr;border:0;width:100%"><button id="sStay"><img src="${ART[f.d.name]}" alt=""><b>Stay</b><small>${f.d.name} holds the front</small></button><button class="primary" id="sSwap"><img src="${ART.MANTA}" alt=""><b>Swap</b><small style="color:#fff">MANTA takes the front</small></button></div></div></div>`;
+    const done = (swap) => { $("#overlay").innerHTML = ""; busy = false; if (swap) { swapIn(G, ME, mj, "Slipstream swaps"); if (G.winner !== null) { checkEnd(); return; } } render(); res(); };
+    $("#sStay").onclick = () => done(false); $("#sSwap").onclick = () => done(true);
+  });
 }
 
 
