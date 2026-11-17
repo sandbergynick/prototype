@@ -1022,6 +1022,10 @@ button[aria-disabled="true"]:hover { filter: grayscale(1); opacity: .7; }
 }
 @keyframes pdlabel { 0%, 40% { opacity: 0; background: rgba(20,30,60,0); } 62% { opacity: 1; background: rgba(20,30,60,.45); } 100% { opacity: 1; background: rgba(20,30,60,.6); } }
 
+/* sound toggle */
+.sndbtn { padding: 6px 8px !important; display: inline-grid; place-items: center; } .sndbtn .gi { width: 17px; height: 17px; }
+.setupbtns .sndbtn { flex: 0 0 auto !important; }
+
 </style>
 </head>
 <body>
@@ -1770,7 +1774,109 @@ document.addEventListener("mouseout", (e) => {
   const bp = e.target.closest(".bpick[data-cmd^='ed:base']");
   if (bp && !bp.contains(e.relatedTarget)) { const sp = bp.querySelector(".spin"); if (sp) spinStop(sp); }
 });
+// ---------------------------------------------------------------- sound: every effect is synthesized, no audio files
+// Glassy palette: sine partials with fast attacks and long exponential tails through a short bright room.
+const SFX = (() => {
+  let ctx = null, master = null, wet = null, nbuf = null, cursor = 0, lastType = "NE";
+  const muted = () => { try { return localStorage.getItem("prototype.mute") === "1"; } catch (e) { return false; } };
+  function boot() {                       // must run inside a tap/click: browsers keep audio locked until then
+    if (ctx) { if (ctx.state === "suspended") ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ctx = new AC();
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 5; comp.connect(ctx.destination);
+    master = ctx.createGain(); master.gain.value = 0.6; master.connect(comp);
+    const len = (ctx.sampleRate * 1.3) | 0, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.4); }
+    const conv = ctx.createConvolver(); conv.buffer = ir; conv.connect(master);
+    wet = ctx.createGain(); wet.gain.value = 0.24; wet.connect(conv);
+    nbuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const nd = nbuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  }
+  const env = (t, dur, g, att = 0.004) => { const a = ctx.createGain(); a.gain.setValueAtTime(0.0001, t); a.gain.exponentialRampToValueAtTime(Math.max(g, 0.0002), t + att); a.gain.exponentialRampToValueAtTime(0.0001, t + dur); return a; };
+  const out = (node, send) => { node.connect(master); if (send > 0) { const s = ctx.createGain(); s.gain.value = send; node.connect(s); s.connect(wet); } };
+  function tone(t, f, dur, g, o = {}) {
+    const osc = ctx.createOscillator(), a = env(t, dur, g, o.att);
+    osc.type = o.type || "sine"; osc.frequency.setValueAtTime(f, t);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + (o.glide || dur));
+    osc.connect(a); out(a, o.send ?? 0.6); osc.start(t); osc.stop(t + dur + 0.05);
+  }
+  function noise(t, dur, g, o = {}) {
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), a = env(t, dur, g, o.att);
+    src.buffer = nbuf; src.loop = true; f.type = o.ft || "bandpass"; f.Q.value = o.q || 1; f.frequency.setValueAtTime(o.f || 3000, t);
+    if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+    src.connect(f); f.connect(a); out(a, o.send ?? 0.4); src.start(t, Math.random() * 0.5); src.stop(t + dur + 0.05);
+  }
+  // a struck-glass note: near-harmonic partials, the upper ones dying faster
+  const glass = (t, f, dur = 0.5, g = 0.14) => [[1, 1], [2.01, 0.42], [3.03, 0.2], [4.62, 0.09]].forEach(([r, k], i) => tone(t, f * r, dur / (1 + i * 0.55), g * k));
+  const S = {
+    tap: (t) => glass(t, 1760, 0.10, 0.035),
+    burn: (t) => { tone(t, 520, 0.16, 0.10, { to: 1180, type: "triangle" }); glass(t + 0.09, 1568, 0.32, 0.09); },
+    install: (t) => { tone(t, 190, 0.10, 0.22, { to: 110, type: "triangle", send: 0.2 }); glass(t + 0.05, 1319, 0.34, 0.09); },
+    play: (t) => [988, 1319, 1976].forEach((f, i) => glass(t + i * 0.055, f, 0.42, 0.085)),
+    rotate: (t) => { noise(t, 0.26, 0.10, { f: 500, to: 2600, q: 1.4 }); glass(t + 0.16, 880, 0.3, 0.07); },
+    turn: (t) => { glass(t, 1047, 0.4, 0.07); glass(t + 0.12, 1568, 0.55, 0.07); },
+    heal: (t) => [784, 988, 1175].forEach((f, i) => glass(t + i * 0.07, f, 0.5, 0.06)),
+    shield: (t) => { tone(t, 1320, 0.5, 0.06); tone(t, 1327, 0.5, 0.06); glass(t, 660, 0.4, 0.05); },
+    shrug: (t) => tone(t, 320, 0.07, 0.10, { type: "triangle", send: 0.15 }),
+    scorch: (t) => { for (let i = 0; i < 5; i++) noise(t + i * 0.045 + Math.random() * 0.02, 0.05, 0.07, { f: 3200 + Math.random() * 2500, q: 4 }); tone(t, 1400, 0.3, 0.03, { to: 700 }); },
+    cool: (t) => { [2637, 2093, 1568].forEach((f, i) => glass(t + i * 0.06, f, 0.6, 0.06)); noise(t, 0.4, 0.03, { ft: "highpass", f: 7000 }); },
+    break: (t) => { noise(t, 0.09, 0.16, { ft: "highpass", f: 2800 }); for (let i = 0; i < 4; i++) glass(t + 0.02 + i * 0.035, 2400 + Math.random() * 2600, 0.22, 0.05); },
+    lock: (t) => { tone(t, 150, 0.12, 0.2, { type: "square", send: 0.2 }); glass(t + 0.02, 523, 0.25, 0.08); },
+    down: (t) => { tone(t, 420, 0.75, 0.16, { to: 55, glide: 0.7 }); noise(t, 0.6, 0.10, { ft: "lowpass", f: 900, to: 120 }); glass(t + 0.05, 311, 0.7, 0.07); glass(t + 0.25, 233, 0.8, 0.06); },
+    win: (t) => [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => glass(t + i * 0.11, f, 0.9, 0.09)),
+    lose: (t) => [659, 587, 494, 392, 330].forEach((f, i) => glass(t + i * 0.16, f, 1.0, 0.08)),
+    // attacks: one voice per type
+    atk: (t, ty) => ({
+      PL: () => { noise(t, 0.24, 0.20, { f: 700, to: 6500, q: 0.9 }); tone(t, 200, 0.2, 0.10, { to: 900, type: "triangle" }); glass(t + 0.17, 2093, 0.4, 0.07); },
+      ST: () => { tone(t, 120, 0.2, 0.34, { to: 52, send: 0.2 }); [[1, 0.16], [2.76, 0.10], [5.4, 0.06], [8.93, 0.035]].forEach(([r, g]) => tone(t + 0.01, 392 * r, 0.55 / Math.sqrt(r), g)); },
+      AQ: () => { tone(t, 300, 0.11, 0.18, { to: 1250, glide: 0.09 }); tone(t + 0.085, 460, 0.12, 0.13, { to: 1600, glide: 0.09 }); noise(t + 0.02, 0.22, 0.07, { ft: "lowpass", f: 2200, to: 500 }); },
+      SP: () => { for (let i = 0; i < 6; i++) tone(t + i * 0.022, 1400 + Math.random() * 3000, 0.035, 0.05, { type: "square", send: 0.3 }); noise(t, 0.09, 0.07, { ft: "highpass", f: 5500 }); glass(t + 0.13, 2794, 0.25, 0.05); },
+      NE: () => { glass(t, 660, 0.3, 0.10); tone(t, 160, 0.09, 0.14, { to: 90, send: 0.2 }); },
+    }[ty] || (() => glass(t, 660, 0.3, 0.1)))(),
+    // the hit landing: heavier with more damage, coloured by the type that dealt it
+    hit: (t, o) => { const k = Math.min(1.6, 0.6 + o.n * 0.22);
+      tone(t, 170, 0.16, 0.20 * k, { to: 60, send: 0.25 });
+      if (o.type === "PL") noise(t, 0.22, 0.09 * k, { ft: "highpass", f: 2600 });
+      else if (o.type === "ST") tone(t, 1080, 0.28, 0.05 * k);
+      else if (o.type === "AQ") noise(t, 0.2, 0.08 * k, { ft: "lowpass", f: 1500, to: 400 });
+      else if (o.type === "SP") tone(t, 3100, 0.05, 0.04 * k, { type: "square", to: 1500 });
+      else glass(t, 880, 0.2, 0.05 * k); },
+  };
+  const GAP = { atk: 0.2, hit: 0.14, down: 0.5, play: 0.14, burn: 0.12, install: 0.12, rotate: 0.2 };
+  function play(name, arg, now) {
+    if (muted() || !ctx || ctx.state !== "running" || !S[name]) return;
+    const t = now ? ctx.currentTime + 0.005 : Math.max(ctx.currentTime + 0.01, cursor);
+    try { S[name](t, arg); } catch (e) {}
+    if (!now) cursor = Math.min(t + (GAP[name] || 0.09), ctx.currentTime + 1.6);     // several log lines in one tick play in order, not on top of each other
+  }
+  // the battle log already narrates everything that happens, so sounds key off it
+  function fromLog(msg, cls) {
+    const m = msg.match(/^(\w+) uses (.+?) on /);
+    if (m) { const c = CARDS[m[2]]; lastType = c && c.type !== "NE" ? c.type : (BASES[m[1]] || {}).type || "NE"; return play("atk", lastType); }
+    const h = msg.match(/ takes (\d+)\./);
+    if (h) return play("hit", { type: lastType, n: +h[1] });
+    if (cls.includes("down")) return play("down");
+    if (/shrugs it off/.test(msg)) return play("shrug");
+    if (/Scorch/.test(msg)) return play("scorch");
+    if (/Cooled/.test(msg)) return play("cool");
+    if (/breaks off|parts broken|holds it at 1 HP/.test(msg)) return play("break");
+    if (/locked down/.test(msg)) return play("lock");
+    if (/heals|repaired|mends|tempered/.test(msg)) return play("heal");
+    if (cls.includes("burn")) return play("burn");
+    if (/into the front/.test(msg)) { lastType = "NE"; return play("rotate"); }
+    if (/ installs? /.test(msg)) return play("install");
+    if (/ plays? /.test(msg) && cls.includes("build")) return play("play");
+    if (cls.includes("sys") && /Your turn/.test(msg)) return play("turn");
+    lastType = /Tripwire|zaps|Feedback|Chain arcs|Static/.test(msg) ? "SP" : /Afterburn|Overclock|Stoke|Burnout|fuse|Rush Order|Igniter/.test(msg) ? "PL" : /Counterweight/.test(msg) ? "ST" : lastType;
+  }
+  const icon = () => `<svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>${muted() ? '<path d="M16 9.5l5 5M21 9.5l-5 5"/>' : '<path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.6 7.6 0 0 1 0 11"/>'}</svg>`;
+  const button = () => `<button class="sm sndbtn" data-cmd="mute" aria-label="${muted() ? "Turn sound on" : "Turn sound off"}" aria-pressed="${!muted()}" title="Sound ${muted() ? "off" : "on"}">${icon()}</button>`;
+  function toggle() { try { localStorage.setItem("prototype.mute", muted() ? "0" : "1"); } catch (e) {} if (!muted()) { boot(); play("turn", null, true); }
+    document.querySelectorAll('[data-cmd="mute"]').forEach((b) => { b.outerHTML = button(); }); }
+  for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, boot, { capture: true, passive: true });
+  return { play, fromLog, button, toggle };
+})();
 function log(msg, cls = "") {
+  SFX.fromLog(msg, cls);
   const map = { hit: "hitline", down: "downline" };
   const c = cls.split(" ").map((x) => map[x] || x).join(" ");
   msg = rich(linkNames(msg));
@@ -1817,7 +1923,7 @@ function showSetup(step) {
   if (setupStep === 3) return pickFront(setupSel.me);
   const starters = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE", "RELAY"];
   const top = `<div class="setuphead"><div class="titlelock"><div class="logo big">PROTOTYPE</div><span class="lbl">robot card duel</span></div>
-      <div class="setupbtns"><button class="tutbtn sm" data-cmd="tutorial"><i class="star"></i><b>Tutorial</b></button><button class="edbtn" data-cmd="editor"><svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/><path d="M8 8h3M8 12h3"/></svg>${DECKS.CUSTOM ? "Edit your deck" : "Deck editor"}</button><button data-cmd="rules">Rules</button></div></div>`;
+      <div class="setupbtns"><button class="tutbtn sm" data-cmd="tutorial"><i class="star"></i><b>Tutorial</b></button><button class="edbtn" data-cmd="editor"><svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/><path d="M8 8h3M8 12h3"/></svg>${DECKS.CUSTOM ? "Edit your deck" : "Deck editor"}</button><button data-cmd="rules">Rules</button>${SFX.button()}</div></div>`;
   let body;
   if (setupStep === 1) {
     const mine = starters.concat(DECKS.CUSTOM ? ["CUSTOM"] : []);
@@ -1897,6 +2003,7 @@ function checkEnd() {
   if (G.winner === null) return false;
   const won = G.winner === ME, endG = G;
   setTimeout(() => { if (G !== endG || G.winner === null) return;       // let the last robot finish powering down first
+  SFX.play(won ? "win" : "lose", null, true);
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel" style="max-width:460px;text-align:center;justify-items:center">
     <h2>${won ? "Victory!" : "Defeat"}</h2><p>${(() => { const loser = G.p[1 - G.winner], decked = !loser.deck.length && alive(loser).length > 0; return decked ? (won ? "The AI ran out of cards to draw." : "You ran out of cards to draw.") : won ? "All three enemy BASEs are powered down." : "Your last BASE powered down."; })()} The game took ${G.turn + 1} turns.</p>
     <button class="primary" id="again">Play again</button></div></div>`;
@@ -1976,6 +2083,7 @@ function onMove(mi) {
   ui = { sel: null, mode: "attack", move: mi }; render();
 }
 function onCmd(cmd) {
+  if (cmd === "mute") { SFX.toggle(); if (G && shell) shell.head.__h = null, render(); return; }
   if (cmd === "editor") return openEditor();
   if (cmd === "tutorial") return startTutorial();
   if (cmd === "tofront") return showSetup(3);
@@ -2373,7 +2481,7 @@ function render() {
   const me = G.p[ME], op = G.p[AI];
   const order = [1, 0, 2];
   setHTML(shell.head, `<div class="logo">PROTOTYPE</div><div class="turnpill ${G.cur === ME ? "me" : ""}">${G.winner !== null ? "Game over" : G.cur === ME ? "Your turn" : "AI's turn"} · T${G.turn + 1}</div>
-    <div class="spacer"></div><button class="sm" data-cmd="rules">Rules</button><button class="sm" data-cmd="new">New</button>`);
+    <div class="spacer"></div>${SFX.button()}<button class="sm" data-cmd="rules">Rules</button><button class="sm" data-cmd="new">New</button>`);
   setHTML(shell.opHead, `<h2>AI · ${op.deckName}</h2><span class="sub"><span class="opcards" title="${op.hand.length} cards in hand">${op.hand.map(() => "<i></i>").join("")}</span><span class="cnt" title="Deck">${DECK_ICON}${op.deck.length}</span><span class="cnt" title="Scrap">${SCRAP_ICON}${op.scrap.length}</span></span><button class="viewbtn" data-cmd="opview" aria-expanded="${opFull}">${opFull ? "Compact ▴" : "View board ▾"}</button>`);
   shell.opSide.classList.toggle("expanded", opFull);
   shell.opSide.classList.toggle("compact", !opFull);
@@ -2492,6 +2600,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-set],[data-cmd],[data-pick],[data-qburn],[data-hand],[data-move],[data-salv],[data-pay],[data-prism],.base");
   if (!t) return;
+  if (!(t.dataset.cmd === "mute")) SFX.play("tap", null, true);
   if (t.dataset.set) { const [side, n] = t.dataset.set.split(":"); setupSel[side] = n; return showSetup(side === "me" ? 2 : 3); }
   if (t.dataset.cmd) return onCmd(t.dataset.cmd);
   if (t.dataset.move != null) return onMove(+t.dataset.move);
