@@ -1810,41 +1810,58 @@ const SFX = (() => {
     if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + dur);
     src.connect(f); f.connect(a); out(a, o.send ?? 0.4); src.start(t, Math.random() * 0.5); src.stop(t + dur + 0.05);
   }
-  // a struck-glass note: near-harmonic partials, the upper ones dying faster
-  const glass = (t, f, dur = 0.5, g = 0.14) => [[1, 1], [2.01, 0.42], [3.03, 0.2], [4.62, 0.09]].forEach(([r, k], i) => tone(t, f * r, dur / (1 + i * 0.55), g * k));
+  // ---- everything is played as notes of one shared progression, so the game sounds like a piece of music
+  const hzm = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const CHORDS = [[62, 66, 69, 73], [59, 62, 66, 69], [55, 59, 62, 66], [57, 61, 64, 69]];   // Dmaj7  Bm7  Gmaj7  A
+  let ci = 0;
+  const ch = () => CHORDS[ci % 4];
+  const nt = (i, up = 0) => ch()[((i % 4) + 4) % 4] + 12 * Math.floor(i / 4) + up;            // i-th chord tone, climbing octaves
+  const reg = () => (typeof G !== "undefined" && G && typeof ME !== "undefined" && G.cur !== ME ? -12 : 0);   // the opponent plays an octave lower
+  // ---- instruments: one per type, plus glass for everything neutral
+  const glass = (t, m, dur = 0.6, g = 0.12) => [[1, 1], [2.01, 0.38], [3.03, 0.16], [4.62, 0.07]].forEach(([r, k], i) => tone(t, hzm(m) * r, dur / (1 + i * 0.6), g * k));
+  const box = (t, m, g = 0.09, dur = 0.7) => { tone(t, hzm(m), dur, g); tone(t, hzm(m) * 4, dur * 0.25, g * 0.35); tone(t, hzm(m) * 2, dur * 0.5, g * 0.2); };        // music box / celesta (SPARK)
+  const kalimba = (t, m, g = 0.13, dur = 0.55) => { const f = hzm(m); tone(t, f * 1.012, dur, g, { to: f, glide: 0.05 }); tone(t, f * 5.4, 0.08, g * 0.25); noise(t, 0.02, g * 0.35, { f: 2500, q: 2, send: 0.1 }); };   // LIQUID
+  const gong = (t, m, g = 0.13, dur = 1.1) => { [[1, 1], [2.76, 0.5], [5.4, 0.25], [8.93, 0.12]].forEach(([r, k]) => tone(t, hzm(m) * r, dur / Math.sqrt(r), g * k)); tone(t, hzm(m) / 2, 0.25, g * 0.8, { send: 0.15 }); };   // STEEL
+  function horn(t, m, dur = 0.35, g = 0.10, fall = false) {                                     // PLASMA: a short brassy swell
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), f = ctx.createBiquadFilter(), a = env(t, dur, g, 0.025), fr = hzm(m);
+    o1.type = o2.type = "sawtooth"; o1.frequency.setValueAtTime(fr, t); o2.frequency.setValueAtTime(fr * 1.006, t);
+    if (fall) { o1.frequency.exponentialRampToValueAtTime(fr * 0.94, t + dur); o2.frequency.exponentialRampToValueAtTime(fr * 0.94 * 1.006, t + dur); }
+    f.type = "lowpass"; f.Q.value = 2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.06); f.frequency.exponentialRampToValueAtTime(900, t + dur);
+    o1.connect(f); o2.connect(f); f.connect(a); out(a, 0.5); o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+  }
+  const VOICE = { PL: horn, ST: gong, AQ: kalimba, SP: box, NE: glass };
   const S = {
-    tap: (t) => glass(t, 1760, 0.10, 0.035),
-    burn: (t) => { tone(t, 520, 0.16, 0.10, { to: 1180, type: "triangle" }); glass(t + 0.09, 1568, 0.32, 0.09); },
-    install: (t) => { tone(t, 190, 0.10, 0.22, { to: 110, type: "triangle", send: 0.2 }); glass(t + 0.05, 1319, 0.34, 0.09); },
-    play: (t) => [988, 1319, 1976].forEach((f, i) => glass(t + i * 0.055, f, 0.42, 0.085)),
-    rotate: (t) => { noise(t, 0.26, 0.10, { f: 500, to: 2600, q: 1.4 }); glass(t + 0.16, 880, 0.3, 0.07); },
-    turn: (t) => { glass(t, 1047, 0.4, 0.07); glass(t + 0.12, 1568, 0.55, 0.07); },
-    heal: (t) => [784, 988, 1175].forEach((f, i) => glass(t + i * 0.07, f, 0.5, 0.06)),
-    shield: (t) => { tone(t, 1320, 0.5, 0.06); tone(t, 1327, 0.5, 0.06); glass(t, 660, 0.4, 0.05); },
-    shrug: (t) => tone(t, 320, 0.07, 0.10, { type: "triangle", send: 0.15 }),
-    scorch: (t) => { for (let i = 0; i < 5; i++) noise(t + i * 0.045 + Math.random() * 0.02, 0.05, 0.07, { f: 3200 + Math.random() * 2500, q: 4 }); tone(t, 1400, 0.3, 0.03, { to: 700 }); },
-    cool: (t) => { [2637, 2093, 1568].forEach((f, i) => glass(t + i * 0.06, f, 0.6, 0.06)); noise(t, 0.4, 0.03, { ft: "highpass", f: 7000 }); },
-    break: (t) => { noise(t, 0.09, 0.16, { ft: "highpass", f: 2800 }); for (let i = 0; i < 4; i++) glass(t + 0.02 + i * 0.035, 2400 + Math.random() * 2600, 0.22, 0.05); },
-    lock: (t) => { tone(t, 150, 0.12, 0.2, { type: "square", send: 0.2 }); glass(t + 0.02, 523, 0.25, 0.08); },
-    down: (t) => { tone(t, 420, 0.75, 0.16, { to: 55, glide: 0.7 }); noise(t, 0.6, 0.10, { ft: "lowpass", f: 900, to: 120 }); glass(t + 0.05, 311, 0.7, 0.07); glass(t + 0.25, 233, 0.8, 0.06); },
-    win: (t) => [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => glass(t + i * 0.11, f, 0.9, 0.09)),
-    lose: (t) => [659, 587, 494, 392, 330].forEach((f, i) => glass(t + i * 0.16, f, 1.0, 0.08)),
-    // attacks: one voice per type
-    atk: (t, ty) => ({
-      PL: () => { noise(t, 0.24, 0.20, { f: 700, to: 6500, q: 0.9 }); tone(t, 200, 0.2, 0.10, { to: 900, type: "triangle" }); glass(t + 0.17, 2093, 0.4, 0.07); },
-      ST: () => { tone(t, 120, 0.2, 0.34, { to: 52, send: 0.2 }); [[1, 0.16], [2.76, 0.10], [5.4, 0.06], [8.93, 0.035]].forEach(([r, g]) => tone(t + 0.01, 392 * r, 0.55 / Math.sqrt(r), g)); },
-      AQ: () => { tone(t, 300, 0.11, 0.18, { to: 1250, glide: 0.09 }); tone(t + 0.085, 460, 0.12, 0.13, { to: 1600, glide: 0.09 }); noise(t + 0.02, 0.22, 0.07, { ft: "lowpass", f: 2200, to: 500 }); },
-      SP: () => { for (let i = 0; i < 6; i++) tone(t + i * 0.022, 1400 + Math.random() * 3000, 0.035, 0.05, { type: "square", send: 0.3 }); noise(t, 0.09, 0.07, { ft: "highpass", f: 5500 }); glass(t + 0.13, 2794, 0.25, 0.05); },
-      NE: () => { glass(t, 660, 0.3, 0.10); tone(t, 160, 0.09, 0.14, { to: 90, send: 0.2 }); },
-    }[ty] || (() => glass(t, 660, 0.3, 0.1)))(),
-    // the hit landing: heavier with more damage, coloured by the type that dealt it
-    hit: (t, o) => { const k = Math.min(1.6, 0.6 + o.n * 0.22);
-      tone(t, 170, 0.16, 0.20 * k, { to: 60, send: 0.25 });
-      if (o.type === "PL") noise(t, 0.22, 0.09 * k, { ft: "highpass", f: 2600 });
-      else if (o.type === "ST") tone(t, 1080, 0.28, 0.05 * k);
-      else if (o.type === "AQ") noise(t, 0.2, 0.08 * k, { ft: "lowpass", f: 1500, to: 400 });
-      else if (o.type === "SP") tone(t, 3100, 0.05, 0.04 * k, { type: "square", to: 1500 });
-      else glass(t, 880, 0.2, 0.05 * k); },
+    tap: (t) => box(t, nt(4 + Math.floor(Math.random() * 4), 12), 0.025, 0.25),
+    burn: (t) => { const r = reg(); kalimba(t, nt(1, 12 + r), 0.08); kalimba(t + 0.07, nt(3, 12 + r), 0.09); },
+    install: (t) => { const r = reg(); tone(t, hzm(nt(0, -12 + r)), 0.12, 0.16, { send: 0.15 }); glass(t + 0.04, nt(0, 12 + r), 0.5, 0.07); glass(t + 0.04, nt(2, 12 + r), 0.5, 0.06); },
+    play: (t) => { const r = reg(); [0, 1, 2, 3].forEach((i) => box(t + i * 0.055, nt(i + 4, r), 0.07)); },
+    rotate: (t) => { const r = reg(); glass(t, nt(2, 12 + r), 0.35, 0.08); glass(t + 0.11, nt(0, 12 + r), 0.45, 0.08); noise(t, 0.2, 0.04, { f: 900, to: 2400, q: 1.2 }); },
+    turn: (t) => { ci++; ch().forEach((m, i) => glass(t + i * 0.05, m + 12, 1.2, 0.05)); glass(t, ch()[0] - 12, 1.4, 0.06); },
+    heal: (t) => [0, 1, 2, 4].forEach((i, k) => box(t + k * 0.07, nt(i + 4), 0.06, 0.9)),
+    shield: (t) => { horn(t, nt(0, 12), 0.5, 0.05); horn(t, nt(2, 12), 0.5, 0.04); },
+    shrug: (t) => gong(t, nt(0, -12), 0.06, 0.3),
+    scorch: (t) => { horn(t, nt(1, 12), 0.22, 0.07, true); horn(t + 0.09, nt(3, 12), 0.22, 0.06, true); for (let i = 0; i < 3; i++) noise(t + i * 0.05, 0.04, 0.04, { f: 4000 + Math.random() * 2000, q: 5 }); },
+    cool: (t) => [7, 6, 5, 4].forEach((i, k) => kalimba(t + k * 0.075, nt(i, 12), 0.07, 0.8)),
+    break: (t) => { [76, 75, 74].forEach((m, k) => glass(t + k * 0.05, m + 12, 0.3, 0.07)); noise(t, 0.08, 0.08, { ft: "highpass", f: 3500 }); },
+    lock: (t) => { gong(t, nt(0, -12), 0.10, 0.8); gong(t + 0.02, nt(0, -5), 0.06, 0.8); },
+    down: (t) => { [3, 2, 1, 0].forEach((i, k) => glass(t + k * 0.13, nt(i), 1.0, 0.08)); tone(t + 0.4, hzm(nt(0, -24)), 1.4, 0.12); },
+    win: (t) => { const P = [[55, 59, 62, 66], [57, 61, 64, 69], [62, 66, 69, 73, 76]];
+      P.forEach((c, k) => c.forEach((m, i) => { box(t + k * 0.42 + i * 0.05, m + 12, 0.06, 1.2); if (!i) glass(t + k * 0.42, m - 12, 1.4, 0.07); })); horn(t + 0.84, 74, 1.1, 0.06); },
+    lose: (t) => { const P = [[55, 59, 62, 66], [54, 57, 61, 64], [47, 50, 54, 59]];
+      P.forEach((c, k) => c.forEach((m, i) => glass(t + k * 0.5 + i * 0.07, m + 12, 1.5, 0.06))); tone(t + 1.0, hzm(35), 1.6, 0.10); },
+    // attacks: each type plays its own instrument and its own little phrase on the current chord
+    atk: (t, ty) => { const r = reg(); ({
+      PL: () => { horn(t, nt(0, 12 + r), 0.14, 0.09); horn(t + 0.1, nt(2, 12 + r), 0.32, 0.10, true); },
+      ST: () => { gong(t, nt(0, r), 0.15, 1.0); gong(t + 0.12, nt(2, r), 0.08, 0.7); },
+      AQ: () => [3, 2, 1].forEach((i, k) => kalimba(t + k * 0.07, nt(i + 4, r), 0.11)),
+      SP: () => [0, 1, 2, 3].forEach((i, k) => box(t + k * 0.04, nt(i + 4, r), 0.07, 0.45)),
+      NE: () => { glass(t, nt(0, 12 + r), 0.4, 0.09); glass(t, nt(2, 12 + r), 0.4, 0.07); },
+    }[ty] || (() => glass(t, nt(0, 12 + r), 0.4, 0.09)))(); },
+    // the hit: a low thud on the chord's root, then the attacker's instrument on a tone that climbs with damage
+    hit: (t, o) => { const k = Math.min(1.5, 0.6 + o.n * 0.2), r = reg();
+      tone(t, hzm(nt(0, -24 + r)) * 1.5, 0.22, 0.17 * k, { to: hzm(nt(0, -24 + r)), glide: 0.08, send: 0.2 });
+      (VOICE[o.type] || glass)(t + 0.02, nt(Math.min(o.n, 6), r), 0.07 * k);
+      if (o.n >= 4) (VOICE[o.type] || glass)(t + 0.06, nt(Math.min(o.n, 6) + 2, r), 0.05 * k); },
   };
   const GAP = { atk: 0.2, hit: 0.14, down: 0.5, play: 0.14, burn: 0.12, install: 0.12, rotate: 0.2 };
   function play(name, arg, now) {
