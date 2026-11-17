@@ -1026,6 +1026,68 @@ button[aria-disabled="true"]:hover { filter: grayscale(1); opacity: .7; }
 .sndbtn { padding: 6px 8px !important; display: inline-grid; place-items: center; } .sndbtn .gi { width: 17px; height: 17px; }
 .setupbtns .sndbtn { flex: 0 0 auto !important; }
 
+/* ===================== v16: board life ===================== */
+/* idle motion: one loop for the body, a slower one for the occasional glance the other way */
+.idle { animation: var(--idle, idle-bob) var(--per, 2.6s) ease-in-out var(--d1, 0s) infinite; transform-origin: 50% 100%; }
+.artwrap { position: relative; display: inline-block; line-height: 0; z-index: 1; }
+.artwrap > img { display: block; }
+.artwrap.idle { animation: var(--idle, idle-bob) var(--per, 2.6s) ease-in-out var(--d1, 0s) infinite, glance var(--gl, 9s) steps(1, end) var(--d2, 0s) infinite; }
+@keyframes idle-bob { 0%,100% { translate: 0 0; scale: 1 1; } 50% { translate: 0 -3px; scale: 1.01 .99; } }
+@keyframes idle-heavy { 0%,100% { translate: 0 0; scale: 1 1; } 45% { translate: 0 -2px; scale: .99 1.02; } 60% { translate: 0 0; scale: 1.03 .97; } }
+@keyframes idle-sway { 0%,100% { translate: 0 0; rotate: -2deg; } 50% { translate: 0 -3px; rotate: 2deg; } }
+@keyframes idle-flick { 0%,100% { translate: 0 0; filter: brightness(1); } 30% { filter: brightness(1.12); } 50% { translate: 0 -3px; } 62% { filter: brightness(.96); } 80% { filter: brightness(1.1); } }
+@keyframes idle-twitch { 0%,100% { translate: 0 0; } 40% { translate: 0 -2px; } 44% { translate: 1px -2px; } 48% { translate: -1px -2px; } 52% { translate: 0 -2px; } }
+@keyframes glance { 0%, 93% { transform: scaleX(1); } 94%, 99% { transform: scaleX(-1); } }
+.base.hit .artwrap.idle, .af.hit .artwrap.idle { animation: hitflinch .38s ease-out; }
+@keyframes hitflinch { 0% { translate: 0 0; filter: brightness(3) saturate(0); } 25% { translate: -6px 1px; filter: brightness(1.6); } 55% { translate: 4px 0; } 100% { translate: 0 0; filter: none; } }
+
+/* status drawn on the robot */
+.fx-embers, .fx-frost, .fx-chain, .fx-glint { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.fx-embers { inset: -30% -10% 0; overflow: visible; }
+.fx-embers i { position: absolute; bottom: 8%; width: 5px; height: 5px; border-radius: 50%; background: #ffb13b; box-shadow: 0 0 6px 2px rgba(255,120,30,.75); animation: ember 1.4s linear infinite; opacity: 0; }
+.fx-embers i:nth-child(1) { left: 22%; animation-delay: 0s; } .fx-embers i:nth-child(2) { left: 38%; animation-delay: .25s; width: 4px; height: 4px; }
+.fx-embers i:nth-child(3) { left: 55%; animation-delay: .55s; } .fx-embers i:nth-child(4) { left: 70%; animation-delay: .8s; width: 3px; height: 3px; }
+.fx-embers i:nth-child(5) { left: 46%; animation-delay: 1.05s; } .fx-embers i:nth-child(6) { left: 30%; animation-delay: 1.2s; width: 3px; height: 3px; }
+@keyframes ember { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 10% { opacity: 1; } 50% { transform: translate(5px, -30px) scale(.8); } 100% { transform: translate(-4px, -62px) scale(.3); opacity: 0; } }
+.fx-frost, .fx-glint { -webkit-mask: var(--spr) center / 100% 100% no-repeat; mask: var(--spr) center / 100% 100% no-repeat; }
+.fx-frost { background: linear-gradient(to top, rgba(215,245,255,.85), rgba(200,238,255,.45) 50%, rgba(200,238,255,.12) 85%); animation: frost 2.4s ease-out both; }
+.fx-frost::after { content: ""; position: absolute; inset: 0; mix-blend-mode: screen; background: repeating-linear-gradient(60deg, transparent 0 9px, rgba(255,255,255,.35) 9px 10px), repeating-linear-gradient(-60deg, transparent 0 11px, rgba(255,255,255,.28) 11px 12px); mask: linear-gradient(to top, #000 0 40%, transparent 70%); -webkit-mask: linear-gradient(to top, #000 0 40%, transparent 70%); }
+.fx-frost i { position: absolute; width: 4px; height: 4px; background: #fff; rotate: 45deg; box-shadow: 0 0 5px #bff; animation: twinkle 1.8s ease-in-out infinite; }
+.fx-frost i:nth-child(1) { left: 26%; bottom: 22%; } .fx-frost i:nth-child(2) { left: 64%; bottom: 34%; animation-delay: .6s; } .fx-frost i:nth-child(3) { left: 45%; bottom: 12%; animation-delay: 1.2s; }
+@keyframes frost { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes twinkle { 0%,100% { opacity: .2; scale: .6; } 50% { opacity: 1; scale: 1.2; } }
+.fx-chain { display: grid; place-items: center; }
+.fx-chain svg { width: 120%; height: auto; max-width: none; stroke: #8a96ab; filter: drop-shadow(0 2px 0 #4a5568); animation: chainin .35s ease-out both; }
+.fx-chain svg g { stroke: #cfd8e6; }
+@keyframes chainin { from { scale: 1.4; opacity: 0; } to { scale: 1; opacity: .92; } }
+.fx-glint { overflow: hidden; }
+.fx-glint::before { content: ""; position: absolute; top: -20%; bottom: -20%; width: 22%; left: -40%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent); rotate: 18deg; animation: glint 3.2s ease-in-out infinite; }
+@keyframes glint { 0%, 62% { left: -40%; } 82%, 100% { left: 120%; } }
+
+/* floating damage numbers, orbs, flash */
+#lifefx { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+.dmgnum { position: absolute; translate: -50% -50%; font-family: var(--display); font-weight: 900; font-size: 30px; color: #fff; -webkit-text-stroke: 2px #d9333a; paint-order: stroke fill; text-shadow: 0 3px 0 #a3171d, 0 6px 12px rgba(200,40,40,.35); animation: dmgbounce 1.05s cubic-bezier(.2,.9,.3,1) both; }
+.dmgnum.big { font-size: 42px; -webkit-text-stroke-width: 2.5px; }
+.dmgnum.zero { font-size: 24px; -webkit-text-stroke-color: #6b7a90; text-shadow: 0 3px 0 #4a5568; }
+@keyframes dmgbounce { 0% { transform: translate(0, 10px) scale(.3); opacity: 0; } 18% { transform: translate(calc(var(--dx) * .4), -34px) scale(1.25); opacity: 1; } 34% { transform: translate(calc(var(--dx) * .7), -18px) scale(.95); }
+  46% { transform: translate(calc(var(--dx) * .85), -26px) scale(1.05); } 70% { transform: translate(var(--dx), -24px) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), -48px) scale(.9); opacity: 0; } }
+.orb { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 22%, var(--c) 45%); box-shadow: 0 0 10px 3px var(--c); }
+.orbhit { position: absolute; width: 10px; height: 10px; translate: -50% -50%; border-radius: 50%; border: 3px solid var(--c); animation: orbhit .45s ease-out forwards; }
+@keyframes orbhit { from { scale: .5; opacity: 1; } to { scale: 3.2; opacity: 0; } }
+.hitflash { position: absolute; inset: 0; background: #fff; animation: hitflash .18s ease-out forwards; }
+@keyframes hitflash { from { opacity: .55; } to { opacity: 0; } }
+.app.shaking { animation: boardshake .32s linear; }
+@keyframes boardshake { 0%,100% { translate: 0 0; } 15% { translate: calc(var(--shk) * -1) calc(var(--shk) * .4); } 30% { translate: var(--shk) calc(var(--shk) * -.5); } 45% { translate: calc(var(--shk) * -.7) calc(var(--shk) * .3); } 60% { translate: calc(var(--shk) * .5) 0; } 80% { translate: calc(var(--shk) * -.2) 0; } }
+
+/* the arena: tint toward the attacker's type, dim when someone is down to one robot */
+#arenatint { position: fixed; inset: 0; pointer-events: none; z-index: 59; opacity: 0; transition: opacity 1.4s ease; background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--tc, #3aa0ff) 55%, transparent), transparent 70%); mix-blend-mode: soft-light; }
+#arenatint.on { opacity: 1; transition-duration: .25s; }
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 58; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(10,20,50,.45)); opacity: 0; transition: opacity 1.6s ease; }
+body.lastbase::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .idle, .artwrap.idle, .fx-embers i, .fx-glint::before, .fx-frost i { animation: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1891,15 +1953,106 @@ const SFX = (() => {
   for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, boot, { capture: true, passive: true });
   return { play, fromLog, button, toggle };
 })();
+// ---------------------------------------------------------------- board life: idle motion, hit feedback, status on the robots, energy orbs, arena tint
+const LIFE = (() => {
+  const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const TYPEVAR = { PL: "--pl", ST: "--st", SP: "--sp", AQ: "--aq", NE: "--ne" };
+  const col = (ty) => getComputedStyle(document.documentElement).getPropertyValue(TYPEVAR[ty] || "--cyan").trim() || "#3aa0ff";
+  let layer = null, tint = null, tintTimer = 0;
+  function ensure() {
+    if (!layer || !layer.isConnected) { layer = document.createElement("div"); layer.id = "lifefx"; document.body.appendChild(layer); }
+    if (!tint || !tint.isConnected) { tint = document.createElement("div"); tint.id = "arenatint"; document.body.appendChild(tint); }
+  }
+  // idle: every robot bobs on its own clock; the phase comes from the wall clock so re-renders never restart it
+  const IDLE = { PL: [2.1, "idle-flick"], ST: [3.4, "idle-heavy"], AQ: [2.9, "idle-sway"], SP: [1.7, "idle-twitch"], NE: [2.6, "idle-bob"] };
+  function idleStyle(b) {
+    if (reduce()) return "";
+    const [per, name] = IDLE[b.d.type] || IDLE.NE, seed = (b.uid * 0.618) % 1, glance = 7 + seed * 5;
+    const now = performance.now() / 1000;
+    return `--idle:${name};--per:${per.toFixed(2)}s;--d1:${(-(now + seed * per) % per).toFixed(2)}s;--gl:${glance.toFixed(2)}s;--d2:${(-(now + seed * 9) % glance).toFixed(2)}s`;
+  }
+  // overlays drawn on top of the sprite for each status
+  function podFx(b, p, isFront) {
+    let h = "";
+    if (b.scorch) h += `<span class="fx-embers" aria-hidden="true">${"<i></i>".repeat(6)}</span>`;
+    if (b.cooled) h += `<span class="fx-frost" aria-hidden="true"><i></i><i></i><i></i></span>`;
+    if (isFront && typeof rotLocked === "function" && rotLocked(p)) h += `<span class="fx-chain" aria-hidden="true"><svg viewBox="0 0 60 60"><g fill="none" stroke-width="5">${[0, 1, 2, 3, 4].map((k) => `<rect x="${-2 + k * 13}" y="${-2 + k * 13}" width="18" height="10" rx="5" transform="rotate(45 ${7 + k * 13} ${3 + k * 13})"/>`).join("")}</g></svg></span>`;
+    const armour = b.d.ability === "plated" || b.ward || (isFront && (p.shield || p.guard)) || (isFront && b.d.ability === "carapace") || b.parts.some((x) => x.passive === "armor1" || x.passive === "foam" || x.passive === "bulwark");
+    if (armour) h += `<span class="fx-glint" aria-hidden="true"></span>`;
+    return h;
+  }
+  function fly(src, dst, ty, i) {                      // one energy orb travelling between two screen points
+    const o = document.createElement("i"); o.className = "orb"; o.style.setProperty("--c", col(ty)); layer.appendChild(o);
+    const dx = dst.x - src.x, dy = dst.y - src.y, lift = -Math.min(90, 30 + Math.hypot(dx, dy) * 0.25);
+    o.style.left = src.x + "px"; o.style.top = src.y + "px";
+    const a = o.animate([{ transform: "translate(-50%,-50%) scale(.4)", opacity: 0 }, { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5 + lift}px)) scale(1.15)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.5)`, opacity: 0.2 }], { duration: 520, delay: i * 90, easing: "cubic-bezier(.45,.05,.4,1)", fill: "both" });
+    a.onfinish = () => { o.remove(); const r = document.createElement("i"); r.className = "orbhit"; r.style.setProperty("--c", col(ty)); r.style.left = dst.x + "px"; r.style.top = dst.y + "px"; layer.appendChild(r); setTimeout(() => r.remove(), 450); };
+  }
+  const centre = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null; };
+  // wraps doAction for the real game only: reads positions before the board re-renders, then launches orbs
+  function wrapAction(orig) {
+    return function (g, a) {
+      if (g !== G || reduce() || !shell) return orig.apply(this, arguments);
+      ensure();
+      const pi = g.cur, side = pi === ME ? "me" : "op", p = g.p[pi], before = { ...p.pool };
+      const pool = pi === ME ? centre(document.querySelector(".energy .poolpips")) || centre(document.querySelector(".energy")) : centre(shell.opHead);
+      const src = a[0] === "burn" ? (pi === ME ? centre(document.querySelector(`.tile[data-hand="${a[1]}"]`)) : centre(document.querySelector(".opcards"))) : null;
+      const tgtSel = a[0] === "attach" ? `.side.${side} .base[data-pos="${a[2]}"] .artwrap` : `.side.${side} .base[data-pos="0"] .artwrap`;
+      const tgt = centre(document.querySelector(tgtSel));
+      const r = orig.apply(this, arguments);
+      let k = 0;
+      for (const ty of Object.keys(p.pool)) {
+        const d = (p.pool[ty] || 0) - (before[ty] || 0);
+        if (d > 0 && src && pool) for (let i = 0; i < Math.min(d, 4); i++) fly(src, pi === ME ? pool : tgt || pool, ty, k++);
+        if (d < 0 && pool && tgt) for (let i = 0; i < Math.min(-d, 4); i++) fly(pool, tgt, ty, k++);
+      }
+      return r;
+    };
+  }
+  // hits: bouncing number over the target, a shake sized to the damage, and a short freeze on big hits
+  function hit(uid, amt) {
+    if (!shell) return; ensure();
+    const el = [...document.querySelectorAll(`.base[data-uid="${uid}"] .artwrap, .af[data-uid="${uid}"] .artwrap`)].find((e) => e.getBoundingClientRect().width);
+    const c = centre(el); if (!c) return;
+    const n = document.createElement("div"); n.className = "dmgnum" + (amt >= 4 ? " big" : amt === 0 ? " zero" : "");
+    n.textContent = amt > 0 ? `−${amt}` : "0"; n.style.left = c.x + "px"; n.style.top = c.y + "px"; n.style.setProperty("--dx", (Math.random() * 30 - 15).toFixed(0) + "px");
+    layer.appendChild(n); setTimeout(() => n.remove(), 1100);
+    if (reduce() || amt <= 0) return;
+    const app = shell.app, mag = Math.min(9, 2 + amt * 1.5);
+    app.style.setProperty("--shk", mag + "px"); app.classList.remove("shaking"); void app.offsetWidth; app.classList.add("shaking");
+    setTimeout(() => app.classList.remove("shaking"), 340);
+    if (amt >= 4) {
+      const f = document.createElement("i"); f.className = "hitflash"; layer.appendChild(f); setTimeout(() => f.remove(), 180);
+      animUntil = Math.max(animUntil, performance.now() + 380);
+    }
+  }
+  // arena colour follows whoever just attacked, then drifts back
+  function attackTint(ty) {
+    ensure(); tint.style.setProperty("--tc", col(ty)); tint.classList.add("on");
+    clearTimeout(tintTimer); tintTimer = setTimeout(() => tint.classList.remove("on"), 2600);
+  }
+  function frame() {
+    ensure();
+    const last = G && G.winner === null && G.p.some((p) => alive(p).length === 1);
+    document.body.classList.toggle("lastbase", !!last);
+  }
+  function fromLog(msg) {
+    const m = msg.match(/^(\w+) uses (.+?) on /); if (!m || !G) return;
+    const c = typeof CARDS !== "undefined" && CARDS[m[2]]; const ty = c && c.type !== "NE" ? c.type : (BASES[m[1]] || {}).type || "NE";
+    attackTint(ty);
+  }
+  return { idleStyle, podFx, wrapAction, hit, frame, fromLog };
+})();
 function log(msg, cls = "") {
-  SFX.fromLog(msg, cls);
+  SFX.fromLog(msg, cls); LIFE.fromLog(msg);
   const map = { hit: "hitline", down: "downline" };
   const c = cls.split(" ").map((x) => map[x] || x).join(" ");
   msg = rich(linkNames(msg));
   msg = msg.replace(/^You\b/, '<span class="who-you">You</span>').replace(/^AI\b/, '<span class="who-ai">AI</span>');
   logs.push({ msg, cls: c }); if (logs.length > 200) logs.shift();
 }
-function fx(uid, amt) { fxq.push({ uid, amt, t: performance.now() }); hits.add(uid); }
+function fx(uid, amt) { fxq.push({ uid, amt, t: performance.now() }); hits.add(uid); LIFE.hit(uid, amt); }
 
 // ---------------------------------------------------------------- setup
 // ---------------------------------------------------------------- custom deck storage
@@ -2063,6 +2216,7 @@ function costOf(a) {
   if (a[0] === "attack") return [moves(G, ME)[a[1]].m.cost, quickDisc(G, ME)];
   return null;
 }
+doAction = LIFE.wrapAction(doAction);
 function act(a, payPicked) {
   if (!payPicked && !tutAllows(a)) return;
   const c = costOf(a);
@@ -2248,12 +2402,12 @@ function baseHTML(b, side, pos) {
   if (isFront && p.overcharge) st.push(`<span class="s-scorch">OVERCHARGE +${p.overcharge}</span>`);
   if (isFront && rotLocked(p)) st.push(`<span class="s-cool">LOCKED</span>`);
   if (isFront && p.afterburn) st.push(`<span class="s-scorch">AFTERBURN</span>`);
-  const pops = fxq.filter((f) => f.uid === b.uid && performance.now() - f.t < 1000).map((f) => `<div class="pop">−${f.amt}</div>`).join("");
+  const pops = "";
   const peeked = ui.peek && ui.peek.k === "base" && ui.peek.side === side && ui.peek.pos === pos;
   return `<div class="base t-${TYPES[b.d.type].cls} ${isFront ? "front" : ""} ${target ? "target" : ""} ${peeked ? "peeked" : ""} ${hits.has(b.uid) ? "hit" : ""}" data-side="${side}" data-pos="${pos}" data-uid="${b.uid}" tabindex="0" role="button" aria-label="${b.d.name}, ${b.hp} of ${b.d.hp} HP${target ? ", tap to choose" : ", tap for details"}">
     <span class="gem ${TYPES[b.d.type].cls}" title="${TYPES[b.d.type].name}">${ICON[b.d.type]}</span>
     <span class="postag">${isFront ? "FRONT" : "SUPPORT"}</span>
-    <div class="pod"><img class="art" src="${ART[b.d.name]}" alt=""><i class="ped"></i><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div></div>
+    <div class="pod"><span class="artwrap idle" style="${LIFE.idleStyle(b)};--spr:url(${ART[b.d.name]})"><img class="art" src="${ART[b.d.name]}" alt="">${LIFE.podFx(b, p, isFront)}</span><i class="ped"></i><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div></div>
     <div class="bmain">
       ${hpBar(b.hp, b.d.hp)}
       ${slots}
@@ -2504,7 +2658,7 @@ function render() {
   shell.meSide.classList.add("compact");
   const snap = animSnap();
   setHTML(shell.opForm, order.map((i) => baseHTML(op.pos[i], "op", i)).join(""));
-  const af = (b, side) => b ? `<div class="af ${side} t-${TYPES[b.d.type].cls} ${hits.has(b.uid) ? "hit" : ""}"><div class="afpod"><img src="${ART[b.d.name]}" alt=""><i class="ped"></i></div><div class="afinfo"><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc">${b.d.name}</span></div>${hpBar(b.hp, b.d.hp)}</div></div>` : `<div class="af ${side} empty"></div>`;
+  const af = (b, side) => b ? `<div class="af ${side} t-${TYPES[b.d.type].cls} ${hits.has(b.uid) ? "hit" : ""}" data-uid="${b.uid}"><div class="afpod"><span class="artwrap idle" style="${LIFE.idleStyle(b)};--spr:url(${ART[b.d.name]})"><img src="${ART[b.d.name]}" alt="">${LIFE.podFx(b, side === "me" ? me : op, true)}</span><i class="ped"></i></div><div class="afinfo"><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc">${b.d.name}</span></div>${hpBar(b.hp, b.d.hp)}</div></div>` : `<div class="af ${side} empty"></div>`;
   setHTML(shell.arena, af(op.pos[0], "op") + `<span class="vs">VS</span>` + af(me.pos[0], "me"));
   setHTML(shell.meForm, order.map((i) => baseHTML(me.pos[i], "me", i)).join(""));
   animPlay(snap);
@@ -2524,6 +2678,7 @@ function render() {
   if (fxq.length || hits.size) setTimeout(() => { fxq = fxq.filter((f) => performance.now() - f.t < 1000); if (G) render(); }, 1000);
   hits.clear();
   fxq = fxq.filter((f) => performance.now() - f.t < 1000);
+  LIFE.frame();
   if (TUT) coachUpdate();
 }
 
