@@ -1005,6 +1005,23 @@ button[aria-disabled="true"]:hover { filter: grayscale(1); opacity: .7; }
 /* robot detail sheet: the big HP bar and the socket row already say this */
 .sheet .binfo .stat { display: none; }
 
+/* ===================== v12 ===================== */
+/* attack buttons: show the whole description instead of cutting it off */
+.mvbtn .mvmain small { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.3; }
+/* a robot powering down: flash, judder, drain of colour, then it drops out */
+.base.dying { pointer-events: none; z-index: 6 !important; animation: powerdown .85s ease-in forwards !important; }
+.base.dying::after { content: "POWERED DOWN"; position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 12px; letter-spacing: .12em; color: #fff; background: rgba(20, 30, 60, .0); text-shadow: 0 1px 3px rgba(0,0,0,.7); border-radius: inherit; animation: pdlabel .85s ease-in forwards; right: auto; top: 0; padding: 0; }
+@keyframes powerdown {
+  0% { filter: none; opacity: 1; transform: none; }
+  10% { filter: brightness(2.4); }
+  22% { filter: brightness(1); transform: translateX(-5px); }
+  34% { transform: translateX(5px); filter: grayscale(.4); }
+  46% { transform: translateX(-3px); filter: grayscale(.8) brightness(.85); }
+  62% { transform: none; opacity: 1; filter: grayscale(1) brightness(.7); }
+  100% { opacity: 0; transform: translateY(12px) scale(.84); filter: grayscale(1) brightness(.45); }
+}
+@keyframes pdlabel { 0%, 40% { opacity: 0; background: rgba(20,30,60,0); } 62% { opacity: 1; background: rgba(20,30,60,.45); } 100% { opacity: 1; background: rgba(20,30,60,.6); } }
+
 </style>
 </head>
 <body>
@@ -1043,7 +1060,7 @@ const BASES = {
   JUNGO: B("JUNGO", "SP", 7, 3, mv("Ram", "CLOSE", 1), "freewheel", "ALWAYS · Freewheel: while JUNGO is on your team, enemy cards can't stop your rotation or make it cost energy."),
   MAGMA: B("MAGMA", "PL", 6, 3, mv("Spit", "FAR", 1, [["PL", 1]]), "erupt", "FRONT · Eruption: MAGMA's moves deal +1 while it's damaged, or +2 at 3 HP or less."),
   SCATHE: B("SCATHE", "PL", 6, 3, null, "slowburn", "SUPPORT · Slow Burn: Scorch on enemy BASEs deals 2 each turn instead of 1."),
-  SPLINT: B("SPLINT", "PL", 5, 2, mv("Pop", "CLOSE", 2), "melt", "FRONT · Short Fuse: at the end of each of your turns SPLINT spends in the front, it takes 1 damage."),
+  SPLINT: B("SPLINT", "PL", 5, 2, mv("Flare", "CLOSE", 2), "melt", "FRONT · Short Fuse: at the end of each of your turns SPLINT spends in the front, it takes 1 damage."),
   MANTA: B("MANTA", "AQ", 8, 2, mv("Ripple", "FAR", 1, [["AQ", 1]]), "slip", "SUPPORT · Slipstream: after your FRONT attacks, you may swap it with MANTA."),
   OTTO: B("OTTO", "AQ", 7, 3, null, "forage", "SUPPORT · Forage: at the start of your turn, look at the top card of your deck. You may put it on the bottom."),
   SHELL: B("SHELL", "AQ", 7, 3, mv("Paddle", "CLOSE", 1), "carapace", "FRONT · Carapace: FAR moves deal 1 less damage to your supports."),
@@ -1055,7 +1072,7 @@ const CARDS = {
   "Ion Fist": PT("Ion Fist", "SP", [], { move: mv("Ion Fist", "CLOSE", 2, [["SP", 1]], ["rot+1"]) }),
   "Arc Lash": PT("Arc Lash", "SP", [["SP", 1]], { move: mv("Arc Lash", "FAR", 2, [["SP", 1]], ["chain1"]) }),
   "Turbo Fins": PT("Turbo Fins", "SP", [], { passive: "draw_on_rotin", text: "When this BASE rotates into the front, draw 1." }),
-  "Ember Core": PT("Ember Core", "PL", [["PL", 1]], { passive: "ember", text: "First time this BASE would power down, it stays at 1 HP; pop Ember Core." }),
+  "Ember Core": PT("Ember Core", "PL", [["PL", 1]], { passive: "ember", text: "First time this BASE would power down, it stays at 1 HP; break Ember Core." }),
   "Spark Plug": PT("Spark Plug", "SP", [], { onAttach: "zap1", text: "On attach: 1 damage to any enemy BASE." }),
   "Igniter": PT("Igniter", "PL", [["PL", 1]], { onAttach: "ignite", text: "On attach: 2 damage to the enemy FRONT and Scorch it." }),
   "Overclock": PY("Overclock", "PL", [], "overclock", "This turn your FRONT's moves cost 2 less. After the attack, your FRONT takes 2 damage."),
@@ -1100,14 +1117,14 @@ const CARDS = {
   "Dynamo": PT("Dynamo", "NE", [["any", 1]], { passive: "dynamo", text: "At the start of your turn, gain 1 NEUTRAL energy." }),
   "Utility Arm": PT("Utility Arm", "NE", [], { move: mv("Utility Arm", "CLOSE", 2, [["any", 1]], [], 0) }),
   "Blueprint": PY("Blueprint", "NE", [], "tutor", "Discard 2 other cards, then take any card from your deck into your hand."),
-  "Factory Reset": PY("Factory Reset", "NE", [], "reset", "Pick one of your BASEs: pop all its parts and heal it 4."),
+  "Factory Reset": PY("Factory Reset", "NE", [], "reset", "Pick one of your BASEs: break all its parts and heal it 4."),
   "Encore": PY("Encore", "NE", [], "encore", "Put a PLAY card (not Encore) from your scrap pile into your hand."),
   // ---- RELAY + new cards
   "Echo Coil": PT("Echo Coil", "SP", [["SP", 1]], { slots: 3, passive: "echo", text: "Whenever you play a PLAY card, draw 1 (max 2 per turn)." }),
   "Bulwark Frame": PT("Bulwark Frame", "ST", [["ST", 1]], { slots: 3, passive: "bulwark", text: "This BASE can't be targeted by FAR moves." }),
   "Overflow Tank": PT("Overflow Tank", "AQ", [["AQ", 1]], { slots: 2, passive: "overflow", text: "At the end of your turn, keep up to 2 unspent energy for next turn." }),
   "Twin Barrel": PT("Twin Barrel", "PL", [["PL", 1]], { slots: 2, move: mv("Twin Barrel", "CLOSE", 2, [["PL", 1], ["any", 1]], ["twin"]), text: "Also hits the enemy support with the lowest HP." }),
-  "Scrap Magnet": PT("Scrap Magnet", "ST", [], { passive: "magnet", text: "Whenever one of your parts is popped, draw 1." }),
+  "Scrap Magnet": PT("Scrap Magnet", "ST", [], { passive: "magnet", text: "Whenever one of your parts is broken, draw 1." }),
   "Overcharge": PY("Overcharge", "PL", [], "overcharge", "Your FRONT takes 1 damage now. Its next move this turn deals +2."),
   "Defrag": PY("Defrag", "SP", [], "defrag", "Shuffle the 3 most recent cards in your scrap pile back into your deck."),
   "Riptide Feint": PY("Riptide Feint", "AQ", [], "feint", "Swap your FRONT with one of your supports. Doesn't use your rotation."),
@@ -1142,7 +1159,7 @@ const DECKS = {
     list: [["Plasma Ribbon", 3], ["Flare Lance", 1], ["Ion Fist", 3], ["Arc Lash", 3], ["Solar Arc", 1], ["Ember Core", 1], ["Spark Plug", 2], ["Igniter", 2], ["Overclock", 2], ["Burnout", 1], ["Hot Start", 1], ["Afterburn", 1], ["Jump Lead", 1], ["Tripwire", 1], ["Power Cell", 3], ["Fuel Rod", 2], ["Ember Whip", 1], ["Volt Lasso", 1]],
   },
   TIDEWALL: {
-    blurb: "Steel / Liquid control. DOZER soaks hits, LITH mends, RHODE Cools attackers and pops their parts.",
+    blurb: "Steel / Liquid control. DOZER soaks hits, LITH mends, RHODE Cools attackers and breaks their parts.",
     bases: ["DOZER", "LITH", "RHODE"],
     list: [["Tide Ring", 2], ["Pressure Jet", 1], ["Bubble Burst", 3], ["Undertow", 2], ["Piston Fist", 3], ["Chrome Halo", 2], ["Anchor Clamp", 1], ["Coolant Tank", 1], ["Repair Kit", 2], ["Fortify", 2], ["Riptide", 1], ["Scan", 2], ["Low Tide", 1], ["Ballast", 2], ["Tide Pool", 2], ["Ram Plate", 1], ["Tidal Palm", 1], ["Counterweight", 1]],
   },
@@ -1461,7 +1478,7 @@ function doAction(g, a) {
       if (m.fx.includes("cool")) { tb.cooled = true; g.log(`${tb.d.name} is Cooled (can't attack next turn).`); }
       if (m.fx.includes("pop") && tb.parts.length) {
         const x = tb.parts.reduce((mm, y) => (partValue(y) > partValue(mm) ? y : mm));
-        tb.parts.splice(tb.parts.indexOf(x), 1); o.scrap.push({ def: x, uid: UID++ }); g.log(`${x.name} pops off ${tb.d.name}!`, "warn");
+        tb.parts.splice(tb.parts.indexOf(x), 1); o.scrap.push({ def: x, uid: UID++ }); g.log(`${x.name} breaks off ${tb.d.name}!`, "warn");
         partsPopped(g, oi);
       }
     }
@@ -1515,7 +1532,7 @@ function resolvePlay(g, pi, d, a, c) {
     } else if (e === "reset") {
       const j = a[2] != null ? a[2] : alive(p).reduce((m, x) => (p.pos[x].d.hp - p.pos[x].hp > p.pos[m].d.hp - p.pos[m].hp ? x : m));
       const b = p.pos[j], hadParts = b.parts.length > 0; for (const x of b.parts) p.scrap.push({ def: x, uid: UID++ }); b.parts = []; const h = Math.min(4, b.d.hp - b.hp); b.hp += h; b.scorch = false;
-      g.log(`${b.d.name} factory reset: parts popped, healed ${h}.`, "warn");
+      g.log(`${b.d.name} factory reset: parts broken, healed ${h}.`, "warn");
       if (hadParts) partsPopped(g, pi);
     }
     else if (e === "salvage") {
@@ -1683,7 +1700,7 @@ function costPips(cost, sm = true) {
     ? `<span class="pip any ${sm ? "sm" : ""}" title="any type">∗</span>`
     : `<span class="pip ${TYPES[k].cls} ${sm ? "sm" : ""}" title="${TYPES[k].name}">${ICON[k]}</span>`).join("")).join("");
 }
-const FX = { twin: "Also hits weakest support", scorch: "Scorch", cool: "Cool", chain1: "Chain 1", pop: "Pops a part", "rot+1": "+1 if rotated in", still2: "+2 if it didn't rotate in", sup1: "+1 vs supports", draw1: "Draw 1", x: "Spends all energy" };
+const FX = { twin: "Also hits weakest support", scorch: "Scorch", cool: "Cool", chain1: "Chain 1", pop: "Breaks a part", "rot+1": "+1 if rotated in", still2: "+2 if it didn't rotate in", sup1: "+1 vs supports", draw1: "Draw 1", x: "Spends all energy" };
 const dmgLabel = (m) => (m.fx.includes("x") ? "X" : String(m.dmg));
 function moveText(m) { const fx = m.fx.filter((f) => f !== "x").map((f) => FX[f]).join(", "); return `${m.rng} ${dmgLabel(m)}${fx ? ", " + fx : ""}`; }
 function cardText(d) { return d.kind === "PART" ? ((d.move ? `Move: ${moveText(d.move)}. ` : "") + d.text).trim() : d.text; }
@@ -1825,7 +1842,7 @@ function rulesHTML() {
   return `<ul>
   <li><b>Burn or use.</b> Every card can be burned for energy of its type (usually 1), or paid for and used. Energy empties at the end of your turn.</li>
   <li><b>Burn limit:</b> you can burn as many cards as your turn number: 1 on your first turn, 2 on your second, and so on.</li>
-  <li><b>Slots:</b> every BASE has a fixed row of slots (the square sockets under its HP). A PART fills 1 to 3 of them and stays until it's popped.</li>
+  <li><b>Slots:</b> every BASE has a fixed row of slots (the square sockets under its HP). A PART fills 1 to 3 of them and stays until it's broken.</li>
   <li><b>PARTs</b> install on any of your BASEs with enough free slots. Parts with a move let that BASE attack, starting the turn after you install them. Some deal damage or heal when attached.</li>
   <li><b>Paying:</b> when a cost includes "any" energy, you choose which of your energy to spend.</li>
   <li><b>PLAYs</b> are free one-shot effects. Some last until your next turn.</li>
@@ -1875,18 +1892,19 @@ function finishTurn() { if (G.winner !== null) return checkEnd(); endTurn(G); be
 function checkEnd() {
   render();
   if (G.winner === null) return false;
-  const won = G.winner === ME;
+  const won = G.winner === ME, endG = G;
+  setTimeout(() => { if (G !== endG || G.winner === null) return;       // let the last robot finish powering down first
   $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel" style="max-width:460px;text-align:center;justify-items:center">
     <h2>${won ? "Victory!" : "Defeat"}</h2><p>${(() => { const loser = G.p[1 - G.winner], decked = !loser.deck.length && alive(loser).length > 0; return decked ? (won ? "The AI ran out of cards to draw." : "You ran out of cards to draw.") : won ? "All three enemy BASEs are powered down." : "Your last BASE powered down."; })()} The game took ${G.turn + 1} turns.</p>
     <button class="primary" id="again">Play again</button></div></div>`;
-  $("#again").onclick = showSetup;
+  $("#again").onclick = showSetup; }, Math.max(0, animUntil - performance.now() + 250));
   return true;
 }
 
 let aiWait = null;
 const aiAuto = () => { try { return localStorage.getItem("prototype.aiAuto") === "1"; } catch (e) { return false; } };
 function aiPause(fromLog) {
-  if (aiAuto() || G.winner !== null) return sleep(650);
+  if (aiAuto() || G.winner !== null) return sleep(Math.max(650, animUntil - performance.now() + 200));
   return new Promise((res) => { aiWait = { res, from: fromLog }; render(); });
 }
 function aiNext() { if (!aiWait) return; const r = aiWait.res; aiWait = null; render(); r(); }
@@ -1930,7 +1948,7 @@ function act(a, payPicked) {
   const r = doAction(G, a);
   ui = { sel: null, mode: null, move: null };
   if (G.winner !== null) return checkEnd();
-  if (r === "end") { render(); if (a[0] === "attack") return void slipAsk().then(() => setTimeout(finishTurn, 450)); setTimeout(finishTurn, 450); return; }
+  if (r === "end") { render(); if (a[0] === "attack") { busy = true; return void sleep(Math.max(0, animUntil - performance.now() + 100)).then(() => { busy = false; return slipAsk(); }).then(() => setTimeout(finishTurn, endDelay())); } setTimeout(finishTurn, endDelay()); return; }
   render();
 }
 function slipAsk() {
@@ -2105,7 +2123,7 @@ function baseHTML(b, side, pos) {
   if (isFront && p.afterburn) st.push(`<span class="s-scorch">AFTERBURN</span>`);
   const pops = fxq.filter((f) => f.uid === b.uid && performance.now() - f.t < 1000).map((f) => `<div class="pop">−${f.amt}</div>`).join("");
   const peeked = ui.peek && ui.peek.k === "base" && ui.peek.side === side && ui.peek.pos === pos;
-  return `<div class="base t-${TYPES[b.d.type].cls} ${isFront ? "front" : ""} ${target ? "target" : ""} ${peeked ? "peeked" : ""} ${hits.has(b.uid) ? "hit" : ""}" data-side="${side}" data-pos="${pos}" tabindex="0" role="button" aria-label="${b.d.name}, ${b.hp} of ${b.d.hp} HP${target ? ", tap to choose" : ", tap for details"}">
+  return `<div class="base t-${TYPES[b.d.type].cls} ${isFront ? "front" : ""} ${target ? "target" : ""} ${peeked ? "peeked" : ""} ${hits.has(b.uid) ? "hit" : ""}" data-side="${side}" data-pos="${pos}" data-uid="${b.uid}" tabindex="0" role="button" aria-label="${b.d.name}, ${b.hp} of ${b.d.hp} HP${target ? ", tap to choose" : ", tap for details"}">
     <span class="gem ${TYPES[b.d.type].cls}" title="${TYPES[b.d.type].name}">${ICON[b.d.type]}</span>
     <span class="postag">${isFront ? "FRONT" : "SUPPORT"}</span>
     <div class="pod"><img class="art" src="${ART[b.d.name]}" alt=""><i class="ped"></i><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc bname">${b.d.name}</span></div></div>
@@ -2265,7 +2283,7 @@ function sheetHTML() {
       let why = "";
       if (!installTargets(G, ME, d).length) {
         const room = alive(me).filter((j) => usedSlots(me.pos[j]) + d.slots <= me.pos[j].d.slots);
-        if (!room.length) why = `None of your robots has ${d.slots > 1 ? `${d.slots} open slots` : "an open slot"} ${slotPips(d.slots, d.slots)}. Pop a part (Factory Reset) or use a different robot.`;
+        if (!room.length) why = `None of your robots has ${d.slots > 1 ? `${d.slots} open slots` : "an open slot"} ${slotPips(d.slots, d.slots)}. Break a part (Factory Reset) or use a different robot.`;
         else { const miss = missingEnergy(me, d.cost, Math.max(...room.map((j) => installDisc(me.pos[j], me, d)))); why = `Installing ${d.name} costs ${costPips(d.cost)}. You need ${needText(miss)}.`; }
       }
       btns += `<button class="primary" data-cmd="install" ${why ? cantAttr("install", why) : ""}>Install <span class="cost">${d.cost.length ? costPips(d.cost) : '<span class="pip free">FREE</span>'}</span></button>`;
@@ -2292,7 +2310,43 @@ function tileHTML(c, i) {
     <span class="tcost">${cost}</span>${d.kind === "PART" ? `<span class="tslot" title="Takes ${d.slots} slot${d.slots > 1 ? "s" : ""}">${slotPips(d.slots, d.slots, `Takes ${d.slots} slot${d.slots > 1 ? "s" : ""}`)}${d.slots} slot${d.slots > 1 ? "s" : ""}</span>` : ""}
     <button class="tburn" data-qburn="${i}" ${canQ ? "" : myTurnIdle() ? cantAttr("qb", `No burns left this turn. You get as many burns as your turn number (${G.p[ME].turns} this turn).`) : "disabled"} title="Quick burn for ${d.burn} ${t.name}" aria-label="Quick burn ${d.name}">+${d.burn}${ICON[d.type]}</button></div>`;
 }
-let shell = null;
+let shell = null, animUntil = 0;
+const noMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const endDelay = () => Math.max(450, animUntil - performance.now() + 150);
+// before a re-render: where every robot tile is right now (the old nodes are kept so a destroyed robot can play out)
+function animSnap() {
+  const m = new Map();
+  if (!shell || noMotion()) return m;
+  for (const el of shell.app.querySelectorAll(".formation > .base[data-uid]")) m.set(el.dataset.uid, { el, rect: el.getBoundingClientRect(), side: el.dataset.side });
+  return m;
+}
+// after it: ghosts for robots that are gone, then slide every robot that moved from its old spot to its new one
+function animPlay(before) {
+  if (!before.size) return;
+  const els = [...shell.app.querySelectorAll(".formation > .base[data-uid]")], now = new Set(els.map((e) => e.dataset.uid));
+  let wait = 0;
+  for (const [uid, o] of before) {
+    if (now.has(uid)) continue;
+    const form = o.side === "me" ? shell.meForm : shell.opForm, fr = form.getBoundingClientRect(), g = o.el;
+    g.getAnimations().forEach((a) => a.cancel());
+    g.removeAttribute("data-uid"); g.removeAttribute("data-pos"); g.removeAttribute("tabindex"); g.classList.remove("target", "hit", "peeked"); g.classList.add("dying");
+    g.style.cssText = `position:absolute !important;grid-area:auto;margin:0;left:${o.rect.left - fr.left}px;top:${o.rect.top - fr.top}px;width:${o.rect.width}px;height:${o.rect.height}px;`;
+    form.appendChild(g); setTimeout(() => g.remove(), 900);
+    wait = 800;
+  }
+  for (const el of els) {
+    const o = before.get(el.dataset.uid); if (!o) continue;
+    const r = el.getBoundingClientRect(), dx = o.rect.left - r.left, dy = o.rect.top - r.top;
+    if (Math.abs(dx) + Math.abs(dy) < 6) continue;
+    const sc = o.rect.width / r.width;
+    el.style.transformOrigin = "0 0"; el.style.zIndex = "4";
+    const a = el.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sc})` }, { transform: `translate(${dx * 0.45}px, ${dy * 0.45}px) scale(${(1 + sc) / 2 + 0.05})`, offset: 0.55 }, { transform: "translate(0, 0) scale(1)" }],
+      { duration: 560, delay: wait, easing: "cubic-bezier(.4, 0, .2, 1)", fill: "backwards" });
+    a.onfinish = () => { el.style.zIndex = ""; el.style.transformOrigin = ""; };
+    animUntil = Math.max(animUntil, performance.now() + wait + 560);
+  }
+  if (wait) animUntil = Math.max(animUntil, performance.now() + wait);
+}
 function setHTML(el, html) { if (el && el.__h !== html) { el.innerHTML = html; el.__h = html; } }
 function buildShell() {
   const app = $("#app");
@@ -2321,10 +2375,12 @@ function render() {
   shell.opSide.classList.toggle("expanded", opFull);
   shell.opSide.classList.toggle("compact", !opFull);
   shell.meSide.classList.add("compact");
+  const snap = animSnap();
   setHTML(shell.opForm, order.map((i) => baseHTML(op.pos[i], "op", i)).join(""));
   const af = (b, side) => b ? `<div class="af ${side} t-${TYPES[b.d.type].cls} ${hits.has(b.uid) ? "hit" : ""}"><div class="afpod"><img src="${ART[b.d.name]}" alt=""><i class="ped"></i></div><div class="afinfo"><div class="plate"><span class="pd">${ICON[b.d.type]}</span><span class="pc">${b.d.name}</span></div>${hpBar(b.hp, b.d.hp)}</div></div>` : `<div class="af ${side} empty"></div>`;
   setHTML(shell.arena, af(op.pos[0], "op") + `<span class="vs">VS</span>` + af(me.pos[0], "me"));
   setHTML(shell.meForm, order.map((i) => baseHTML(me.pos[i], "me", i)).join(""));
+  animPlay(snap);
   setHTML(shell.meHead, `<h2>YOU · ${me.deckName === "CUSTOM" ? "YOUR DECK" : me.deckName}</h2><span class="sub"><span class="cnt" title="Deck">${DECK_ICON}${me.deck.length}</span><span class="cnt" title="Scrap">${SCRAP_ICON}${me.scrap.length}</span></span>`);
   setHTML(shell.hand, me.hand.map(tileHTML).join("") || `<div class="note">Hand empty.</div>`);
   setHTML(shell.ctrl, controlsHTML());
