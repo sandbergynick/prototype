@@ -1044,26 +1044,26 @@ const PT = (name, type, cost, o = {}) => ({ kind: "PART", name, type, cost, slot
 const PY = (name, type, cost, effect, text, o = {}) => ({ kind: "PLAY", name, type, cost, effect, text, burn: o.burn || 1, playable: o.playable !== false });
 
 const BASES = {
-  HAMZA: B("HAMZA", "PL", 8, 3, mv("Bump", "CLOSE", 1), "hotswap", "FRONT · Hot Swap: when HAMZA rotates into the front, gain 1 PL energy."),
+  HAMZA: B("HAMZA", "PL", 8, 3, mv("Bump", "CLOSE", 2, [["PL", 1]]), "hotswap", "FRONT · Hot Swap: when HAMZA rotates into the front, gain 1 PL energy."),
   ZIPP: B("ZIPP", "SP", 7, 2, mv("Static", "FAR", 1, [["any", 1]]), "quick", "FRONT · Quick Charge: ZIPP's moves cost 1 less."),
   HALO: B("HALO", "SP", 6, 2, null, "relay", "SUPPORT · Relay: once per turn, when you burn a card, gain 1 extra energy of its type."),
-  DOZER: B("DOZER", "ST", 9, 4, mv("Shove", "CLOSE", 1), "plated", "ALWAYS · Plated: takes 1 less damage from CLOSE moves."),
+  DOZER: B("DOZER", "ST", 8, 3, mv("Shove", "CLOSE", 2, [["ST", 1]]), "plated", "ALWAYS · Plated: takes 1 less damage from CLOSE moves."),
   RHODE: B("RHODE", "AQ", 7, 3, mv("Splash", "FAR", 1, [["AQ", 1]]), "chill", "FRONT · Undercurrent: RHODE's moves that Cool deal +1."),
   LITH: B("LITH", "ST", 6, 2, null, "mend", "SUPPORT · Mend: at the start of your turn, heal 1 on your FRONT."),
-  GAMMA: B("GAMMA", "PL", 8, 3, mv("Flicker", "FAR", 1, [["PL", 1]]), "critical", "FRONT · Critical Mass: GAMMA's moves deal +1 for each part on it beyond the first."),
-  DONDON: B("DONDON", "ST", 10, 3, mv("Thump", "CLOSE", 1), "drum", "SUPPORT · Drumbeat: your FRONT's moves deal +1."),
-  NOMAD: B("NOMAD", "ST", 7, 2, mv("Haul", "CLOSE", 1), "packmule", "ALWAYS · Pack Mule: parts installed on NOMAD cost 1 less."),
+  GAMMA: B("GAMMA", "PL", 7, 3, mv("Flicker", "FAR", 1, [["PL", 1]]), "critical", "FRONT · Critical Mass: GAMMA's moves deal +1 for each part on it beyond the first."),
+  DONDON: B("DONDON", "ST", 9, 3, mv("Thump", "CLOSE", 2, [["ST", 1]]), "drum", "SUPPORT · Drumbeat: your FRONT's moves deal +1."),
+  NOMAD: B("NOMAD", "ST", 7, 3, mv("Haul", "CLOSE", 2, [["ST", 1]]), "packmule", "ALWAYS · Pack Mule: parts installed on NOMAD cost 1 less."),
   SCRIPT: B("SCRIPT", "SP", 6, 2, mv("Compile", "FAR", 0, [], ["draw1"]), "backup", "SUPPORT · Backup: when another of your BASEs powers down, draw 2."),
   FLUX: B("FLUX", "AQ", 7, 3, mv("Ripple", "FAR", 1, [["AQ", 1]]), "feedback", "ALWAYS · Feedback: whenever you draw a card outside your normal draw, deal 1 damage to the enemy FRONT (max 2 per turn)."),
-  TOTEM: B("TOTEM", "ST", 6, 5, null, "rack", "SUPPORT · Weapon Rack: your FRONT can use the moves of parts installed on TOTEM."),
-  MINI: B("MINI", "SP", 5, 1, mv("Ping", "FAR", 1, [["SP", 1]]), "scout", "FRONT · Scout: when MINI rotates into the front, draw 2."),
+  TOTEM: B("TOTEM", "ST", 8, 5, null, "rack", "SUPPORT · Weapon Rack: your FRONT can use the moves of parts installed on TOTEM."),
+  MINI: B("MINI", "SP", 5, 2, mv("Ping", "FAR", 1, [["SP", 1]]), "scout", "FRONT · Scout: when MINI rotates into the front, draw 2."),
   JUNGO: B("JUNGO", "SP", 7, 3, mv("Ram", "CLOSE", 1), "freewheel", "ALWAYS · Freewheel: while JUNGO is on your team, enemy cards can't stop your rotation or make it cost energy."),
   MAGMA: B("MAGMA", "PL", 6, 3, mv("Spit", "FAR", 1, [["PL", 1]]), "erupt", "FRONT · Eruption: MAGMA's moves deal +1 while it's damaged, or +2 at 3 HP or less."),
   SCATHE: B("SCATHE", "PL", 6, 3, null, "slowburn", "SUPPORT · Slow Burn: Scorch on enemy BASEs deals 2 each turn instead of 1."),
   SPLINT: B("SPLINT", "PL", 5, 2, mv("Flare", "CLOSE", 2), "melt", "FRONT · Short Fuse: at the end of each of your turns SPLINT spends in the front, it takes 1 damage."),
-  MANTA: B("MANTA", "AQ", 8, 2, mv("Ripple", "FAR", 1, [["AQ", 1]]), "slip", "SUPPORT · Slipstream: after your FRONT attacks, you may swap it with MANTA."),
+  MANTA: B("MANTA", "AQ", 7, 2, mv("Ripple", "FAR", 1, [["AQ", 1]]), "slip", "SUPPORT · Slipstream: after your FRONT attacks, you may swap it with MANTA."),
   OTTO: B("OTTO", "AQ", 7, 3, null, "forage", "SUPPORT · Forage: at the start of your turn, look at the top card of your deck. You may put it on the bottom."),
-  SHELL: B("SHELL", "AQ", 7, 3, mv("Paddle", "CLOSE", 1), "carapace", "FRONT · Carapace: FAR moves deal 1 less damage to your supports."),
+  SHELL: B("SHELL", "AQ", 8, 3, mv("Paddle", "CLOSE", 2, [["AQ", 1]]), "carapace", "FRONT · Carapace: FAR moves deal 1 less damage to your supports."),
 };
 
 const CARDS = {
@@ -1097,19 +1097,19 @@ const CARDS = {
   "Ballast": PY("Ballast", "ST", [], "", "Burn only.", { burn: 2, playable: false }),
   // ---- FORGE
   "Nova Core": PT("Nova Core", "PL", [["PL", 1]], { move: mv("Nova Core", "CLOSE", 0, [], ["x"], 1), text: "X move: spends ALL your energy (at least 1) and deals that much." }),
-  "Slag Hammer": PT("Slag Hammer", "ST", [["ST", 1]], { move: mv("Slag Hammer", "CLOSE", 3, [["ST", 1]], [], 2) }),
-  "Ember Whip": PT("Ember Whip", "PL", [["PL", 1]], { move: mv("Ember Whip", "FAR", 2, [["PL", 1]], ["scorch"], 1) }),
+  "Slag Hammer": PT("Slag Hammer", "ST", [["ST", 1]], { move: mv("Slag Hammer", "CLOSE", 3, [["ST", 1]], [], 1) }),
+  "Ember Whip": PT("Ember Whip", "PL", [["PL", 1]], { move: mv("Ember Whip", "FAR", 2, [["PL", 1], ["any", 1]], ["scorch"], 1) }),
   "Amplifier": PT("Amplifier", "ST", [["ST", 1]], { passive: "amp", text: "This BASE's moves deal +1." }),
   "Fuel Rod": PY("Fuel Rod", "PL", [], "", "Burn only.", { burn: 2, playable: false }),
   "Stoke": PY("Stoke", "PL", [], "stoke", "Gain 2 PLASMA energy. Your FRONT takes 1 damage."),
-  "Temper": PY("Temper", "ST", [], "temper", "Heal 2 on your FRONT and clear Scorch and Cool from it. Until your next turn, prevent the next 1 damage to it."),
+  "Temper": PY("Temper", "ST", [], "temper", "Clear Scorch and Cool from your FRONT and heal it 2."),
   // ---- CYCLE
   "Volt Lasso": PT("Volt Lasso", "SP", [["SP", 1]], { move: mv("Volt Lasso", "FAR", 1, [["SP", 1]], ["draw1"], 2) }),
   "Tidal Palm": PT("Tidal Palm", "AQ", [["AQ", 1]], { move: mv("Tidal Palm", "CLOSE", 3, [["AQ", 1], ["any", 1]], ["cool"], 1) }),
   "Data Siphon": PT("Data Siphon", "SP", [["SP", 1]], { passive: "siphon", text: "After this BASE attacks, draw 1." }),
   "Foam Plating": PT("Foam Plating", "AQ", [["AQ", 1]], { passive: "foam", text: "This BASE takes 1 less damage from FAR moves." }),
   "Refresh": PY("Refresh", "SP", [], "refresh", "Draw 1 card and gain 1 SPARK energy."),
-  "Flash Flood": PY("Flash Flood", "AQ", [], "flood", "Cool the enemy FRONT: it can't attack on its owner's next turn."),
+  "Flash Flood": PY("Flash Flood", "AQ", [], "flood", "Cool the enemy FRONT: it can't attack on its owner's next turn. Your turn ends."),
   "Static Field": PY("Static Field", "SP", [], "static", "Deal 1 damage to each enemy BASE."),
   "Capacitor": PY("Capacitor", "SP", [], "", "Burn only: gain 1 SPARK energy and draw a card.", { burn: 1, playable: false }),
   "Tide Pool": PY("Tide Pool", "AQ", [], "", "Burn only.", { burn: 2, playable: false }),
@@ -1134,9 +1134,9 @@ const CARDS = {
   // ---- type-identity set
   "Burnout": PY("Burnout", "PL", [], "burnout", "Your FRONT takes 2 damage. Draw 2 cards."),
   "Solar Arc": PT("Solar Arc", "PL", [["PL", 1], ["any", 1]], { slots: 2, move: mv("Solar Arc", "FAR", 3, [["PL", 2]], ["scorch"]), text: "Heavy." }),
-  "Ram Plate": PT("Ram Plate", "ST", [["ST", 1]], { slots: 2, move: mv("Ram Plate", "CLOSE", 2, [["ST", 1]], ["still2"]), text: "Heavy. +2 if this BASE didn't rotate into the front this turn." }),
+  "Ram Plate": PT("Ram Plate", "ST", [["ST", 1]], { slots: 2, move: mv("Ram Plate", "CLOSE", 3, [["ST", 1]], ["still2"]), text: "Heavy. +2 if this BASE didn't rotate into the front this turn." }),
   "Counterweight": PT("Counterweight", "ST", [["ST", 1]], { passive: "counter", text: "Whenever a CLOSE move hits this BASE, the attacker takes 1 damage." }),
-  "Pressure Jet": PT("Pressure Jet", "AQ", [["AQ", 1]], { move: mv("Pressure Jet", "FAR", 2, [["AQ", 1], ["any", 1]], ["sup1"]) }),
+  "Pressure Jet": PT("Pressure Jet", "AQ", [["AQ", 1]], { move: mv("Pressure Jet", "FAR", 3, [["AQ", 1], ["any", 1]], ["sup1"]) }),
   "Low Tide": PY("Low Tide", "AQ", [], "lowtide", "Pick one of your BASEs: return its newest part to your hand and heal it 2."),
   "Jump Lead": PT("Jump Lead", "SP", [], { move: mv("Jump Lead", "CLOSE", 1, []) }),
   "Tripwire": PT("Tripwire", "SP", [], { passive: "tripwire", text: "Whenever an enemy BASE rotates into the front, it takes 1 damage." }),
@@ -1267,12 +1267,14 @@ function draw(g, p, init = false, normal = false) {
 function damage(g, pi, idx, amt, o = {}) {
   const p = g.p[pi], b = p.pos[idx];
   if (!b || (amt <= 0 && o.raw)) return 0;
+  const amt0 = amt;
   if (!o.raw) {
     if (o.close && b.d.ability === "plated") amt -= 1;
     if (o.far && idx !== 0 && p.pos[0] && p.pos[0].d.ability === "carapace") amt -= 1;
     const arm = b.parts.filter((x) => x.passive === "armor1").length - (b.armUsed || 0);
     if (arm > 0 && amt > 0) { const s = Math.min(arm, amt); b.armUsed = (b.armUsed || 0) + s; amt -= s; }
     if (o.far) amt -= b.parts.filter((x) => x.passive === "foam").length;
+    if (amt0 > 0 && amt < 1) amt = 1;
     if (b.ward && amt > 0) { b.ward = 0; amt -= 1; }
     if (idx === 0) {
       if (p.guard > 0 && amt > 0) { const s = Math.min(p.guard, amt); p.guard -= s; amt -= s; }
@@ -1514,8 +1516,8 @@ function resolvePlay(g, pi, d, a, c) {
     else if (e === "refresh") { p.pool.SP += 1; draw(g, p); if (g.winner !== null) return "end"; }
     else if (e === "fortify") p.guard += 2;
     else if (e === "stoke") { p.pool.PL += 2; if (p.pos[0]) { g.log("Stoke strains the front."); damage(g, pi, 0, 1, { raw: true }); } }
-    else if (e === "temper") { const f = p.pos[0]; if (f) { const h = Math.min(2, f.d.hp - f.hp); f.hp += h; f.scorch = false; f.cooled = false; g.log(`${f.d.name} tempered (+${h}).`); } p.guard += 1; }
-    else if (e === "flood") { o.pos[0].cooled = true; g.log(`${o.pos[0].d.name} is Cooled.`); }
+    else if (e === "temper") { const f = p.pos[0]; if (f) { const h = Math.min(2, f.d.hp - f.hp); f.hp += h; f.scorch = false; f.cooled = false; g.log(`${f.d.name} tempered (+${h}).`); } }
+    else if (e === "flood") { o.pos[0].cooled = true; g.log(`${o.pos[0].d.name} is Cooled.`); return "end"; }
     else if (e === "static") { for (const j of alive(o)) { damage(g, oi, j, 1); if (g.winner !== null) return "end"; } }
     else if (e === "recycle") { const back = p.scrap.filter((x) => x !== c); p.scrap = []; p.deck.push(...back); shuffle(p.deck); g.log(`${back.length} cards shuffled back into ${poss(p)} deck. Recycle is removed from the game.`); }
     else if (e === "encore") {
@@ -1848,6 +1850,7 @@ function rulesHTML() {
   <li><b>PLAYs</b> are free one-shot effects. Some last until your next turn.</li>
   <li><b>Rotate</b> once per turn for free: swap your FRONT with a support. A Cooled FRONT can always rotate out, even under Lockdown.</li>
   <li><b>Attack</b> with your FRONT's move. CLOSE hits only the enemy FRONT; FAR hits any enemy BASE. Attacking ends your turn.</li>
+  <li><b>Armour:</b> effects that make a BASE take less damage can't reduce a hit below 1. Effects that <i>prevent</i> damage (Fortify, Hardlight) still can.</li>
   <li><b>SYNC:</b> a move part on a robot of the same type hits harder. The colored number on the card is its damage when matched.</li>
   <li><b>NEUTRAL</b> (colorless) cards fit any deck. Their energy only pays "any" costs, and their moves never SYNC.</li>
   <li><b>Decking out:</b> if you have to draw a card and your deck is empty, you lose. Extra-draw cards speed this up, so watch your deck count.</li>
@@ -1858,7 +1861,7 @@ function startGame(deck, frontIdx, aiChoice) {
   if (aiWait) { aiWait = null; }
   const starters = ["IGNITION", "TIDEWALL", "FORGE", "CYCLE", "RELAY"];
   const aiDeck = aiChoice === "RANDOM" || !aiChoice ? starters[(Math.random() * starters.length) | 0] : aiChoice;
-  logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1;
+  logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1; busy = false;
   G = { p: [mkPlayer("You", deck, true, frontIdx), mkPlayer("AI", aiDeck, false, 0)], cur: Math.random() < 0.5 ? 0 : 1, turn: 0, winner: null, log, fx };
   for (const p of G.p) {
     for (let i = 0; i < 5; i++) draw(G, p, true);
@@ -1948,7 +1951,7 @@ function act(a, payPicked) {
   const r = doAction(G, a);
   ui = { sel: null, mode: null, move: null };
   if (G.winner !== null) return checkEnd();
-  if (r === "end") { render(); if (a[0] === "attack") { busy = true; return void sleep(Math.max(0, animUntil - performance.now() + 100)).then(() => { busy = false; return slipAsk(); }).then(() => setTimeout(finishTurn, endDelay())); } setTimeout(finishTurn, endDelay()); return; }
+  if (r === "end") { busy = true; render(); if (a[0] === "attack") { return void sleep(Math.max(0, animUntil - performance.now() + 100)).then(() => slipAsk()).then(() => setTimeout(finishTurn, endDelay())); } setTimeout(finishTurn, endDelay()); return; }
   render();
 }
 function slipAsk() {
@@ -1959,7 +1962,7 @@ function slipAsk() {
     busy = true;
     $("#overlay").innerHTML = `<div class="overlay"><div class="modal panel" style="max-width:380px;justify-items:center;text-align:center"><h2>Slipstream</h2><p>Swap <b>${f.d.name}</b> (${f.hp}/${f.d.hp} HP) out for <b>MANTA</b> (${m.hp}/${m.d.hp} HP) before the enemy's turn?</p>
       <div class="frontpick" style="grid-template-columns:1fr 1fr;border:0;width:100%"><button id="sStay"><img src="${ART[f.d.name]}" alt=""><b>Stay</b><small>${f.d.name} holds the front</small></button><button class="primary" id="sSwap"><img src="${ART.MANTA}" alt=""><b>Swap</b><small style="color:#fff">MANTA takes the front</small></button></div></div></div>`;
-    const done = (swap) => { $("#overlay").innerHTML = ""; busy = false; if (swap) { swapIn(G, ME, mj, "Slipstream swaps"); if (G.winner !== null) { checkEnd(); return; } } render(); res(); };
+    const done = (swap) => { $("#overlay").innerHTML = ""; if (swap) { swapIn(G, ME, mj, "Slipstream swaps"); if (G.winner !== null) { checkEnd(); return; } } render(); res(); };
     $("#sStay").onclick = () => done(false); $("#sSwap").onclick = () => done(true);
   });
 }
@@ -2427,7 +2430,7 @@ const TSTEPS = [
 ];
 function startTutorial() {
   aiWait = null;
-  logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1;
+  logs = []; fxq = []; hits.clear(); if (shell) shell.logN = -1; busy = false;
   G = { p: [mkPlayer("You", "IGNITION", true, 2), mkPlayer("AI", "TIDEWALL", false, 0)], cur: ME, turn: 0, winner: null, log, fx };
   const me = G.p[ME];
   for (const n of ["Plasma Ribbon", "Plasma Ribbon", "Hot Start", "Ion Fist", "Power Cell"]) { const k = me.deck.findIndex((c) => c.def.name === n); me.hand.push(me.deck.splice(k, 1)[0]); }
